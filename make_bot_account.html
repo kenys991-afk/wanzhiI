@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>建立 bot 帳號 kokbot／角色 kok（胡尼史）</title>
+<style>body{font-family:system-ui,"Noto Sans TC",sans-serif;background:#1d1610;color:#f0e2c0;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.box{background:#2b2016;border:2px solid #c9a227;border-radius:10px;padding:24px 32px;max-width:560px;line-height:1.75}
+a{color:#f0d878}</style></head>
+<body><div class="box"><h2>🤖 建立練功帳號與角色</h2><div id="out">處理中…</div></div>
+<script>
+'use strict';
+// 與 index.html 同來源（同一個 localStorage）。格式與遊戲一致：
+//   wzw_accounts_v1            = {version:1, accounts:{名稱:{salt,hash,created,isGM?}}, last, migrated?}；isGM 只會出現在 kokbot（GM 帳號）
+//   wzw_koa_slots_v1@<帳號>     = {version:1, slots:[s0,s1,s2]}，slot = {player,auction,groundLoot,time}
+// 只「新增」，不覆蓋任何既有帳號或角色；舊版（無帳號）存檔留給遊戲本身去遷移到 player 帳號。
+const ACCT_KEY='wzw_accounts_v1', PREFIX='wzw_koa_slots_v1@', OLD_KEY='wzw_koa_slots_v1', LEGACY_KEY='wzw_koa_save_v1';
+const ACCT='kokbot', ACCT_REC={"salt": "15788b12ee3160743a3a851ddda452d0", "hash": "747afc518518f6dd552df5228fbe828ade9723a2963d65199e84a19b12a9fa6d"}; // 密碼只存加鹽 SHA-256；明碼在 /workspace/萬王之王/bot_account.txt
+const ID='kok', NICK='胡尼史';
+const TEMPLATE={"id": "kok", "name": "胡尼史", "cls": "novice", "job": "novice", "x": 320, "y": 400, "hp": 100, "maxHp": 100, "mp": 40, "maxMp": 40, "atk": 12, "spd": 2.5, "level": 1, "exp": 0, "expNext": 153, "gold": 60, "inv": [{"id": "hp_potion", "qty": 3}, {"id": "mp_potion", "qty": 2}], "equip": {"weapon": null, "armor": null, "helmet": null, "offhand": null}, "facing": 1, "atkCd": 0, "invuln": 0, "quest": {"id": "starter", "kills": 0, "herbs": 0, "status": "inactive"}, "tutorialDone": false, "jobTier": 0, "kills": 0, "skills": {"power_strike": 0, "first_aid": 0, "sprint": 0, "war_cry": 0, "guard_shield": 0, "focus": 0, "js_whirl": 0, "js_charge": 0, "js_rage": 0, "js_missile": 0, "js_shadow": 0, "js_heal": 0, "js_shadowstep": 0, "js_shuriken": 0, "js_flurry": 0, "js_saint_dance": 0, "js_fortress": 0, "js_god_roar": 0, "js_judgement": 0, "js_dragon_dive": 0, "js_devour": 0, "js_blood_fury": 0, "js_earthshatter": 0, "js_behead": 0, "js_firestorm": 0, "js_ice_rain": 0, "js_chain_bolt": 0, "js_great_heal": 0, "js_holy_verdict": 0, "js_hymn": 0, "js_soul_burst": 0, "js_hex_ring": 0, "js_demon_flame": 0, "js_assassinate": 0, "js_shadow_dance": 0, "js_pickpocket": 0, "js_clone": 0, "js_poison_mist": 0, "js_wind_blade": 0, "js_heaven_fist": 0, "js_qi_wave": 0, "js_diamond_body": 0}, "skillExp": {"power_strike": 0, "first_aid": 0, "sprint": 0, "war_cry": 0, "guard_shield": 0, "focus": 0, "js_whirl": 0, "js_charge": 0, "js_rage": 0, "js_missile": 0, "js_shadow": 0, "js_heal": 0, "js_shadowstep": 0, "js_shuriken": 0, "js_flurry": 0, "js_saint_dance": 0, "js_fortress": 0, "js_god_roar": 0, "js_judgement": 0, "js_dragon_dive": 0, "js_devour": 0, "js_blood_fury": 0, "js_earthshatter": 0, "js_behead": 0, "js_firestorm": 0, "js_ice_rain": 0, "js_chain_bolt": 0, "js_great_heal": 0, "js_holy_verdict": 0, "js_hymn": 0, "js_soul_burst": 0, "js_hex_ring": 0, "js_demon_flame": 0, "js_assassinate": 0, "js_shadow_dance": 0, "js_pickpocket": 0, "js_clone": 0, "js_poison_mist": 0, "js_wind_blade": 0, "js_heaven_fist": 0, "js_qi_wave": 0, "js_diamond_body": 0}, "skillCd": {"first_aid": 0, "sprint": 0, "war_cry": 0, "guard_shield": 0, "focus": 0}, "sprintTimer": 0, "buffWarCry": 0, "buffGuard": 0, "buffFocus": 0, "jobBuff": null, "rage": 0, "combo": 0, "comboT": 0, "combatT": 0, "stealth": 0, "shield": null, "hots": [], "reviveCd": 0, "recast": null, "totemAtk": 0, "totemDef": 0, "totemCd": {"dragon": 0, "shield": 0}, "continent": "scambray", "bot": {"on": false}, "skillVer": 2, "intendedPath": ["magician", "priest"]}; // 由遊戲 makePlayer('kok') 實際產生後匯出
+const out=document.getElementById('out'), log=[];
+function J(k){ const r=localStorage.getItem(k); if(r===null) return null; return JSON.parse(r); } // 解析失敗就丟出，避免覆蓋
+function slotsOf(k){ const d=J(k); return d&&Array.isArray(d.slots)?[d.slots[0]||null,d.slots[1]||null,d.slots[2]||null]:null; }
+function idOf(s){ return s&&s.player?String(s.player.id||s.player.name||''):''; }
+function finish(go){ out.innerHTML=log.join('<br>')+'<br><a href="index.html">前往遊戲</a>'; if(go) setTimeout(()=>{ location.href='index.html'; },go); }
+try{
+  const st=J(ACCT_KEY)||{version:1,accounts:{},last:''};
+  if(!st.accounts||typeof st.accounts!=='object') throw new Error('帳號資料格式不符，已停止（未做任何更改）');
+  // 1) 帳號
+  const exist=Object.keys(st.accounts).find(k=>k.toLowerCase()===ACCT);
+  if(exist){ st.accounts[exist].isGM=true; log.push(`帳號「${exist}」已存在，保留原樣（密碼不變），確認為 👑 GM 帳號。`); }
+  else { st.accounts[ACCT]={salt:ACCT_REC.salt,hash:ACCT_REC.hash,created:Date.now(),isGM:true}; log.push(`✅ 已建立 👑 GM 帳號「${ACCT}」（密碼見 bot_account.txt）`); }
+  const acct=exist||ACCT;
+  // 2) 角色 kok：角色 ID 全域唯一（所有帳號＋尚未遷移的舊存檔）
+  let where=null;
+  for(const a of Object.keys(st.accounts)){ const sl=slotsOf(PREFIX+a); if(sl){ const i=sl.findIndex(s=>idOf(s)===ID); if(i>=0){ where=`帳號「${a}」欄位 ${i+1}`; break; } } }
+  if(!where&&!st.migrated){ const sl=slotsOf(OLD_KEY); if(sl&&sl.some(s=>idOf(s)===ID)) where='舊版存檔（下次進遊戲會轉入「player」帳號）'; else { const l=J(LEGACY_KEY); if(l&&idOf(l)===ID) where='舊版存檔（下次進遊戲會轉入「player」帳號）'; } }
+  let ok=true;
+  if(where){ log.push(`角色ID「${ID}」已存在於 ${where}，不重複建立。`); }
+  else{
+    const k=PREFIX+acct, sl=slotsOf(k)||[null,null,null], free=sl.findIndex(s=>!(s&&s.player));
+    if(free<0){ ok=false; log.push(`❌ 帳號「${acct}」三個欄位都滿了，未建立角色（未做任何更改）。`); }
+    else{
+      const p=JSON.parse(JSON.stringify(TEMPLATE));
+      p.id=ID; p.name=NICK; p.level=1; p.exp=0; p.job='novice'; p.cls='novice';
+      p.tutorialDone=false; p.jobTier=0; p.continent='scambray';
+      p.intendedPath=['magician','priest']; // 預定路線（僅提示）：魔導士 → 牧師；轉職由玩家親自找冒險主
+      p.bot={on:false};
+      sl[free]={player:p,auction:[],groundLoot:[],time:Date.now()};
+      localStorage.setItem(k,JSON.stringify({version:1,slots:sl}));
+      log.push(`✅ 已在帳號「${acct}」欄位 ${free+1} 建立角色：ID <b>${ID}</b>／暱稱 <b>${NICK}</b>（Lv.1 新手・史坎布雷）`);
+    }
+  }
+  if(ok) st.last=acct; // 登入畫面預先帶入帳號名（不含密碼）
+  localStorage.setItem(ACCT_KEY,JSON.stringify(st));
+  log.push('登入後選欄位「繼續遊戲」，按 <b>B</b> 開始自動練功（到 Lv.10/40/70 會停下來等你轉職）。');
+  finish(ok?4000:0);
+}catch(e){ log.push('❌ 建立失敗：'+e.message); finish(0); }
+</script></body></html>
