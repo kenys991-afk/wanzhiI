@@ -1928,7 +1928,7 @@ const ITEMS={
 })();
 /** 物品出售價（收購商）：一般 40%；有詞綴的裝備另加；金幣塊等特殊物品依 sellMul */
 /** 回城／傳送卷軸：傳到城鎮傳送點（伺服器也接受這些點 → 線上同樣有效） */
-const TOWN_POINTS={scambray:[['史坎布雷',8,8],['東境村',36,8],['王都 亞斯藍',8,-30]],redrock:[['赤晶鎮',8,8]],frozen:[['霜燼要塞',8,8]]};
+const TOWN_POINTS={scambray:[['史坎布雷',8,8],['東境村',36,8],['王都 亞斯藍',8,-30]],redrock:[['赤晶鎮',8,8]],frozen:[['霜燼要塞',8,8]],lavaTower:[['熔岩巨塔入口',8,8]],abyssRoad:[['深淵入口',8,8]],seaVast:[['海域碼頭',8,8]]};
 function useTownScroll(p,mode){
   const L=TOWN_POINTS[curCont]||[['城鎮',8,8]];
   const go=(h)=>{ const x=(h[1]+0.5)*TILE, y=(h[2]+2.5)*TILE; p.x=x; p.y=y; touchOrder=null; if(typeof QP!=='undefined'&&QP) qpStop(); spawnParticles(x,y,'#a0d0ff',24); msg(`📜 傳送到 ${h[0]}`); if(typeof netForceMv==='function') netForceMv(); };
@@ -1994,6 +1994,44 @@ const MONSTER_TYPES=[
 ];
 const MONSTER_LV_MAX=120; // 魔物等級上限（等級依所在大陸＋與主城距離，見 monsterBaseLevelAt）
 // ========== 大陸（初級／中級／上級）：各自種子的無限地圖＋安全城鎮 ==========
+
+// ===== 技能精通系統 =====
+function ensureMastery(p){ if(!p.mastery||typeof p.mastery!=='object') p.mastery={}; return p.mastery; }
+function onSkillUse(p,skillId){
+  if(!p||!skillId) return;
+  const m=ensureMastery(p);
+  if(!m[skillId]) m[skillId]={uses:0,lv:0};
+  m[skillId].uses=(m[skillId].uses|0)+1;
+  const thr=[0,30,100,250,500,1000];
+  const need=thr[m[skillId].lv]||99999;
+  if(m[skillId].uses>=need && m[skillId].lv<5) m[skillId].lv++;
+}
+function masteryMul(p,skillId){
+  const m=(p&&p.mastery&&p.mastery[skillId])||{};
+  return 1+((m.lv|0)*0.08);
+}
+function canMasteryTransfer(p){
+  if(!p||(p.level|0)<120) return false;
+  return Object.values(p.mastery||{}).filter(m=>(m.lv|0)>=3).length>=3;
+}
+// ===== 組隊跟隨 =====
+let followLeader=false;
+function partyFollow(){
+  if(!followLeader||!window.PT||!PT.id||PT.leader===meId) return;
+  // 需依實際變數名稱調整（meId / p / curCont）
+}
+// ===== 背包強化輔助 =====
+let invTab='item';
+let invSelected=new Set();
+function shouldPickup(itemId){
+  const it=ITEMS[itemId]; if(!it) return false;
+  const f=p.pickupFilter||{};
+  if(it.type==='potion' && f.potion===false) return false;
+  if(it.slot && f.gear===false) return false;
+  if((it.rarity|0) < (f.rarity|0)) return false;
+  return true;
+}
+
 const CONTINENTS={
   scambray:{id:'scambray',name:'史坎布雷大陸',tier:'初級',emoji:'🌿',color:'#9ad870',reqLv:1,lvMin:1,lvMax:39,lvStep:0.5,seed:0,town:'史坎布雷',
     sub:'史坎布雷・東境村・王都 亞斯藍',monsters:null},
@@ -2011,8 +2049,12 @@ const CONTINENTS={
     {name:'冰屍騎士',color:'#4a6a8a',hp:98,atk:17,spd:1.3,exp:44,gold:[12,26],r:17,emoji:'🛡️',undead:1},
     {name:'冰龍幼獸',color:'#7ac8f0',hp:112,atk:18,spd:1.7,exp:50,gold:[14,28],r:19,emoji:'🐉',top:26}
   ]}
+,
+  lavaTower:{id:'lavaTower',name:'熔岩巨塔',tier:'超高',emoji:'🌋',color:'#ff5a2a',reqLv:120,lvMin:120,lvMax:170,lvStep:0.3,seed:91001,town:'熔岩巨塔入口'},
+  abyssRoad:{id:'abyssRoad',name:'深淵亡靈大路',tier:'超高',emoji:'💀',color:'#6a3a8a',reqLv:120,lvMin:120,lvMax:170,lvStep:0.3,seed:91002,town:'深淵入口'},
+  seaVast:{id:'seaVast',name:'萬丈海域',tier:'超高',emoji:'🌊',color:'#2a6a9a',reqLv:120,lvMin:120,lvMax:170,lvStep:0.3,seed:91003,town:'海域碼頭'}
 };
-const CONT_ORDER=['scambray','redrock','frozen'];
+const CONT_ORDER=['scambray','redrock','frozen','lavaTower','abyssRoad','seaVast'];
 let curCont='scambray';
 function contOf(id){ return CONTINENTS[id||curCont]||CONTINENTS.scambray; }
 function contLabel(id){ const C=contOf(id); return `${C.name}・${C.tier}`; }

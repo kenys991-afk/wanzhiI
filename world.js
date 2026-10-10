@@ -13,7 +13,7 @@ function createWorld(G,deps){
   const {db,log,pushEntry,send,clients,isGM,aucAddDeath,aucRemoveDrop}=deps; const partyOf=deps.partyOf||(()=>null);
   const TILE=40, CHUNK=16, CH=CHUNK*TILE;
   const W={};
-  for(const cont of ['scambray','redrock','frozen']) W[cont]={cont,ctx:G[cont],mons:new Map(),chunks:new Map(),items:new Map()};
+  for(const cont of ['scambray','redrock','frozen','lavaTower','abyssRoad','seaVast']) W[cont]={cont,ctx:G[cont],mons:new Map(),chunks:new Map(),items:new Map()};
   const stats={hits:0,rejected:0,clamped:0,kills:0,mhits:0};
   const playersIn=(cont)=>{ const out=[]; for(const c of clients) if(c.char&&c.pos&&c.pos.c===cont&&db.chars[c.char]) out.push(c); return out; };
   const D=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -35,6 +35,7 @@ function createWorld(G,deps){
     // Lv40+（紅石／冰封野外、Lv40+ 洞窟）：魔物略增 ~+20–30%（野外額外 2 → 3～4 隻；Lv40+ 洞窟額外 +2）
     const hiCave=base.some(e=>e.cave&&(e.level|0)>=40), isCave=base.some(e=>e.cave);
     const extra=!base.length?0:isCave?((w.cont==='scambray'?3:2)+(hiCave?2:0)):w.cont==='scambray'?3:(3+(rnd()<0.4?1:0));
+    if(['lavaTower','abyssRoad','seaVast'].includes(w.cont)) extra += 5; // 120+ 地圖野外增量
     for(let j=0,tries=0;j<extra&&tries<40;tries++){
       const src=base[Math.floor(rnd()*base.length)], x=cx*CH+TILE+rnd()*(CH-2*TILE), y=cy*CH+TILE+rnd()*(CH-2*TILE);
       try{ const tx=x/TILE, ty=y/TILE; if(w.ctx.hubAtTile(tx,ty)||Math.hypot(tx-8,ty-8)<10||w.ctx.inNewbieZone(x,y)||!w.ctx.canWalk(x,y,14)||w.ctx.inMonsterFreeHub(x,y)) continue; }catch(e){ continue; } // 同單機規則：不生在城鎮／起始城 10 格內

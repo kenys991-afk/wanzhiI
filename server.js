@@ -222,7 +222,7 @@ const ALLY_SKILLS={
   xp_heaven_judgement:{k:'heal',v:0.1,cd:20,icon:'⚜️',name:'天堂審判'},
 };
 // ===== 組隊（伺服器權威；最多 5 人；離線即離隊）=====
-const PARTY_MAX=5, PARTY_R=600, parties=new Map(), charParty=new Map(); let partySeq=1;
+const PARTY_MAX=3, PARTY_R=600, parties=new Map(), charParty=new Map(); let partySeq=1;
 function clientOfChar(ch){ for(const c of clients) if(c.char===ch) return c; return null; }
 function partyOfChar(ch){ const P=parties.get(charParty.get(ch)); return P?P.members.slice():null; }
 function partySys(P,text){ const o={t:'chat',ch:'p',from:'',sys:1,text,ts:Date.now()}; for(const ch of P.members){ const c=clientOfChar(ch); if(c) send(c,o); } }
