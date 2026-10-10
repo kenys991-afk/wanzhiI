@@ -1,7 +1,7 @@
 {
-  "name": "wzw-aibots",
-  "private": true,
+  "name": "wanzhi",
+  "version": "1.0.0",
   "dependencies": {
-    "playwright-core": "^1.64.0"
+    "ws": "^8.22.0"
   }
 }
