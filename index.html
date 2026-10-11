@@ -1197,6 +1197,12 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
 #del-dlg .dq{display:flex;gap:6px;align-items:center;justify-content:center;font-size:.8rem;margin:6px 0}#del-dlg .dq input[type=number]{width:56px}#del-dlg .dq input[type=range]{width:100px}
 #del-dlg .ws-act{display:flex;gap:8px;justify-content:center;margin-top:8px}#del-dlg .del-go{background:#8a1d1d!important;border-color:#ff6a5a!important;color:#fff!important}
 @keyframes delShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+#mastery-panel{position:fixed;right:8px;bottom:calc(var(--dock-h) + 12px + var(--sab));width:160px;max-height:180px;overflow-y:auto;background:rgba(20,16,12,.92);border:1px solid #8d7350;border-radius:4px;padding:6px 8px;color:#f4ecd8;font-size:.68rem;z-index:15;pointer-events:auto}
+#mastery-panel b{color:#ffe9a8;display:block;margin-bottom:4px;font-size:.72rem}
+#mastery-panel .ms-row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dashed #3a3229}
+#mastery-panel .ms-lv{color:#7dff9a}
+
 </style>
 <style id="desc-white">
 /* 解說文字一律白色（標題／名稱／稀有度色、數值高亮維持原色；inline 色不受影響） */
@@ -1209,6 +1215,12 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
 .inv-gold .gv{color:#ffe9a8;font-variant-numeric:tabular-nums}
 .inv-gold.bump{animation:invGoldBump .45s ease-out}
 @keyframes invGoldBump{0%{transform:scale(1.12);box-shadow:0 0 10px rgba(255,216,96,.8)}100%{transform:scale(1)}}
+
+#mastery-panel{position:fixed;right:8px;bottom:calc(var(--dock-h) + 12px + var(--sab));width:160px;max-height:180px;overflow-y:auto;background:rgba(20,16,12,.92);border:1px solid #8d7350;border-radius:4px;padding:6px 8px;color:#f4ecd8;font-size:.68rem;z-index:15;pointer-events:auto}
+#mastery-panel b{color:#ffe9a8;display:block;margin-bottom:4px;font-size:.72rem}
+#mastery-panel .ms-row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dashed #3a3229}
+#mastery-panel .ms-lv{color:#7dff9a}
+
 </style>
 </head>
 <body>
@@ -1333,7 +1345,8 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
         <div id="quick-slots"></div>
       </div>
       <div id="dock-mid">
-        <div id="dock-log">
+        <div id="mastery-panel"><b>精通熟練度</b><div id="mastery-list">尚無精通</div></div>
+<div id="dock-log">
           <div class="cl"><span class="ch">【世界】</span><span class="who">系統</span> 歡迎來到萬王之王</div>
           <div class="cl"><span class="ch c">【大陸】</span>點地面走路，點怪物鎖定攻擊</div>
           <div class="cl"><span class="ch">【系統】</span>技能先點圖示，再點地面或怪物</div>
@@ -2589,8 +2602,8 @@ function nearestScarecrow(p,maxD){let best=null,bd=maxD;for(const s of SCARECROW
 function strawFx(s,n){spawnParticles(s.x,s.y-10,'#d8b860',n||10);spawnParticles(s.x,s.y-10,'#e0c040',Math.ceil((n||10)/2))}
 const ALL_NPCS=[
   // —— 天使雕像（轉職＋學習職業技能）：城市＝一轉／二轉；國家＝三轉 ——
-  {id:'angel_s',role:'angel',static:1,maxTier:2,name:'史坎布雷 天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#fff0b0',lines:{default:'天使低語：在此轉職、學習職業技能。'}},
-  {id:'angel_r',role:'angel',static:1,maxTier:2,name:'赤晶鎮 天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#fff0b0',cont:'redrock',lines:{default:'天使低語：在此轉職、學習職業技能。'}},
+  {id:'angel_s',role:'angel',static:1,maxTier:2,name:'史坎布雷 天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#fff0b0',lines:{default:'天使低語：在此轉職、學習職業技能。\n【精通轉職】需 120 級 + 3 技能精通 Lv.3\n可學習本職業精通技能與專屬技能'}},
+  {id:'angel_r',role:'angel',static:1,maxTier:2,name:'赤晶鎮 天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#fff0b0',cont:'redrock',lines:{default:'天使低語：在此轉職、學習職業技能。\n【精通轉職】需 120 級 + 3 技能精通 Lv.3\n可學習本職業精通技能與專屬技能'}},
   {id:'angel_f',role:'angel',static:1,maxTier:3,name:'國家天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#ffe080',cont:'frozen',lines:{default:'國家天使：三轉與三轉技能在此授予。'}},
   // —— 史坎布雷 商店街（北側攤位）＋ 交易平台廣場（西南） ——
   {id:'vend_weapon',role:'vendor',shop:'weapon_s',name:'鐵匠 阿鋼',sign:'⚔️ 武器',stall:'#8a2a20',x:1.6*TILE,y:5.7*TILE,emoji:'⚒️',color:'#7a4a30',look:{hair:'#2a1a10',weapon:'axe',hat:null},
@@ -6257,6 +6270,102 @@ function deleteByRarity(minRar){
   });
   if(p.inv.length < before){ openInv(); updateHUD(); if(ONLINE&&net) net.saveSoon=true; }
 }
+
+
+// ===== 精通職業轉職（天使雕像） =====
+
+// ===== 各職業精通技能（天使雕像學習） =====
+
+// ===== 各職業專屬技能（天使雕像可學） =====
+const EXCLUSIVE_SKILLS = {
+  swordsman: {id:'ex_sword', name:'劍氣斬', icon:'⚔️', desc:'前方劍氣 140% 傷害並擊退', cd:6, cost:{rage:20}},
+  warrior: {id:'ex_warrior', name:'盾擊震盪', icon:'🛡️', desc:'盾擊暈眩 1.5 秒，周圍傷害', cd:8, cost:{rage:25}},
+  berserker: {id:'ex_berserk', name:'血怒狂斬', icon:'🪓', desc:'消耗血量造成高額傷害', cd:10, cost:{rage:30}},
+  bloodrager: {id:'ex_blood', name:'血海狂瀾', icon:'🩸', desc:'範圍吸血斬，傷害轉為治療', cd:12, cost:{rage:40}},
+  magician: {id:'ex_magic', name:'魔力爆發', icon:'🔮', desc:'瞬間法術傷害 +30%，自身脆弱', cd:9, cost:{mp:25}},
+  mage: {id:'ex_elem', name:'元素風暴', icon:'🌀', desc:'游標處三元素交替爆發', cd:11, cost:{mp:30}},
+  stormcaller: {id:'ex_storm', name:'雷霆萬鈞', icon:'⚡', desc:'大範圍連鎖雷電並麻痺', cd:14, cost:{mp:40}},
+  priest: {id:'ex_holy', name:'聖療光環', icon:'✝️', desc:'持續治療周圍隊友', cd:12, cost:{mp:28}},
+  bishop: {id:'ex_bishop', name:'神罰審判', icon:'⛪', desc:'聖光柱傷害不死系並治療隊友', cd:15, cost:{mp:35}},
+  scout: {id:'ex_scout', name:'疾影連擊', icon:'🔪', desc:'快速移動後連射飛刀', cd:7, cost:{mp:15}},
+  ninja: {id:'ex_ninja', name:'影分身・斬', icon:'🥷', desc:'分身同時攻擊並瞬身', cd:10, cost:{mp:20}},
+  fighter: {id:'ex_fist', name:'連擊終結', icon:'👊', desc:'消耗連擊點造成高倍率重拳', cd:8, cost:{mp:12}},
+  fist_saint: {id:'ex_saint', name:'破天一拳', icon:'🥋', desc:'超大範圍衝擊波', cd:13, cost:{mp:25}}
+};
+
+function learnExclusiveSkill(jobId){
+  const p = game.player;
+  const ex = EXCLUSIVE_SKILLS[jobId];
+  if(!ex){ msg('此職業尚無專屬技能'); return; }
+  if((p.level|0) < 40){ msg('需 40 級以上才能學習專屬技能'); return; }
+  if(p.exclusiveSkills && p.exclusiveSkills[ex.id]){ msg('已學會「'+ex.name+'」'); return; }
+  if(!confirm('確定在天使雕像學習專屬技能「'+ex.name+'」？')) return;
+  p.exclusiveSkills = p.exclusiveSkills || {};
+  p.exclusiveSkills[ex.id] = 1;
+  msg('✨ 學會專屬技能：'+ex.name);
+  if(ONLINE&&net) net.saveSoon=true;
+  updateHUD();
+}
+
+const MASTERY_SKILLS = {
+  // 劍士線
+  swordsman: { id:'ms_sword', name:'劍術精通', icon:'⚔️', desc:'普攻傷害 +15%，暴擊率 +5%', bonus:{atk:0.15, crit:0.05} },
+  berserker: { id:'ms_rage', name:'狂怒精通', icon:'🪓', desc:'怒氣技能傷害 +20%，低血時額外 +10%', bonus:{atk:0.20} },
+  bloodrager: { id:'ms_blood', name:'血怒精通', icon:'🩸', desc:'吸血 +25%，HP 越低傷害越高', bonus:{atk:0.25, lifesteal:0.25} },
+  // 魔導士線
+  magician: { id:'ms_mana', name:'魔力精通', icon:'🔮', desc:'法術傷害 +12%，MP 回復 +15%', bonus:{atk:0.12, mpRegen:0.15} },
+  mage: { id:'ms_elem', name:'元素精通', icon:'🌀', desc:'元素技能傷害 +18%，暴擊返還 MP', bonus:{atk:0.18} },
+  stormcaller: { id:'ms_storm', name:'雷電精通', icon:'⚡', desc:'連鎖閃電目標 +1，麻痺時間延長', bonus:{atk:0.22} },
+  priest: { id:'ms_holy', name:'聖光精通', icon:'✝️', desc:'治療量 +30%，復活冷卻縮短', bonus:{heal:0.30} },
+  bishop: { id:'ms_bishop', name:'神恩精通', icon:'⛪', desc:'聖盾吸收 +40%，全隊增益延長', bonus:{heal:0.40, def:0.1} },
+  // 斥候線
+  scout: { id:'ms_scout', name:'疾風精通', icon:'🔪', desc:'移動速度 +12%，飛刀傷害 +10%', bonus:{spd:0.12, atk:0.10} },
+  ninja: { id:'ms_ninja', name:'忍術精通', icon:'🥷', desc:'瞬身距離 +20%，分身傷害 +15%', bonus:{spd:0.15, atk:0.15} },
+  fighter: { id:'ms_fist', name:'拳術精通', icon:'👊', desc:'連擊點累積加快，終結技傷害 +20%', bonus:{atk:0.20} },
+  fist_saint: { id:'ms_saint', name:'拳聖精通', icon:'🥋', desc:'破天拳範圍擴大，衝擊波傷害 +25%', bonus:{atk:0.25} }
+};
+
+function learnMasterySkill(jobId){
+  const p = game.player;
+  const ms = MASTERY_SKILLS[jobId];
+  if(!ms){ msg('此職業尚無精通技能'); return; }
+  if(!canMasteryTransfer(p)){ msg('精通條件未達（120級 + 3技能精通Lv.3）'); return; }
+  if(p.masterySkills && p.masterySkills[ms.id]){ msg('已學會「'+ms.name+'」'); return; }
+  if(!confirm('確定在天使雕像學習「'+ms.name+'」？')) return;
+  p.masterySkills = p.masterySkills || {};
+  p.masterySkills[ms.id] = 1;
+  msg('✨ 學會精通技能：'+ms.name);
+  if(ONLINE&&net) net.saveSoon=true;
+  updateHUD();
+}
+
+function tryMasteryTransfer(){
+  const p = game.player;
+  if(!canMasteryTransfer(p)){
+    msg('精通條件未達：需 120 級且至少 3 個技能精通達 Lv.3');
+    return;
+  }
+  if(!confirm('確定進行精通職業轉職？技能將全面強化')) return;
+  p.masteryBonus = (p.masteryBonus||0) + 0.2;
+  msg('✨ 精通轉職成功！全體技能傷害 +20%');
+  if(ONLINE && net) net.saveSoon = true;
+  updateHUD();
+}
+
+
+function updateMasteryPanel(){
+  const el = document.getElementById('mastery-list');
+  if(!el || !game || !game.player) return;
+  const m = game.player.mastery || {};
+  const keys = Object.keys(m).filter(k => m[k] && m[k].lv > 0);
+  if(!keys.length){ el.innerHTML = '尚無精通'; return; }
+  el.innerHTML = keys.map(k => {
+    const lv = m[k].lv|0;
+    const uses = m[k].uses|0;
+    return `<div class="ms-row"><span>${k}</span><span class="ms-lv">Lv.${lv} (${uses})</span></div>`;
+  }).join('');
+}
+setInterval(updateMasteryPanel, 1500);
 
 function openInv(){
   if(!game||paused)return;
