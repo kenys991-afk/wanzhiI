@@ -1534,7 +1534,77 @@ body.ui-s .act-btns {
 <script>
 (function(){
 'use strict';
+// ===== 一轉技能（3攻擊 + 3輔助 + 1詛咒） =====
+const JOB1_SKILLS = {
+  swordsman: {
+    attack: [
+      {id:'sw_a1', name:'強力斬擊', desc:'近戰 160% 傷害'},
+      {id:'sw_a2', name:'橫掃', desc:'前方扇形傷害'},
+      {id:'sw_a3', name:'突刺', desc:'直線穿刺傷害'}
+    ],
+    support: [
+      {id:'sw_s1', name:'戰吼', desc:'攻擊 +20% 持續 8 秒'},
+      {id:'sw_s2', name:'鐵壁', desc:'防禦 +25% 持續 6 秒'},
+      {id:'sw_s3', name:'怒氣蓄積', desc:'立即獲得怒氣'}
+    ],
+    curse: [{id:'sw_c1', name:'破甲斬', desc:'降低目標防禦 30%'}]
+  },
+  magician: {
+    attack: [
+      {id:'mg_a1', name:'火球術', desc:'遠程火焰傷害'},
+      {id:'mg_a2', name:'冰箭', desc:'冰屬性傷害並緩速'},
+      {id:'mg_a3', name:'雷擊', desc:'雷屬性傷害並麻痺'}
+    ],
+    support: [
+      {id:'mg_s1', name:'魔力護盾', desc:'吸收傷害'},
+      {id:'mg_s2', name:'冥想', desc:'持續回復 MP'},
+      {id:'mg_s3', name:'元素強化', desc:'法術傷害 +15%'}
+    ],
+    curse: [{id:'mg_c1', name:'元素弱化', desc:'降低目標元素抗性'}]
+  },
+  scout: {
+    attack: [
+      {id:'sc_a1', name:'飛刀投擲', desc:'中距離物理傷害'},
+      {id:'sc_a2', name:'連射', desc:'快速連續飛刀'},
+      {id:'sc_a3', name:'精準射擊', desc:'高暴擊傷害'}
+    ],
+    support: [
+      {id:'sc_s1', name:'疾跑', desc:'移速 +30% 持續 5 秒'},
+      {id:'sc_s2', name:'閃避姿態', desc:'閃避率提升'},
+      {id:'sc_s3', name:'專注', desc:'暴擊率 +10%'}
+    ],
+    curse: [{id:'sc_c1', name:'毒刃', desc:'持續毒素傷害'}]
+  }
+};
 
+// ===== 二轉技能（2攻擊 + 1輔助）+ 共鳴 =====
+const JOB2_SKILLS = {
+  warrior: { attack:[{id:'wr_a1',name:'旋風斬',desc:'周圍迴旋傷害'},{id:'wr_a2',name:'猛擊',desc:'高傷害單擊'}], support:[{id:'wr_s1',name:'戰鬥姿態',desc:'攻防同時提升'}] },
+  knight: { attack:[{id:'kn_a1',name:'聖盾衝鋒',desc:'衝鋒暈眩'},{id:'kn_a2',name:'盾擊',desc:'擊退並減防'}], support:[{id:'kn_s1',name:'守護之盾',desc:'大幅減傷'}] },
+  berserker: { attack:[{id:'br_a1',name:'狂暴斬',desc:'高傷自損'},{id:'br_a2',name:'血腥撕裂',desc:'流血傷害'}], support:[{id:'br_s1',name:'狂暴',desc:'攻擊大增'}] },
+  mage: { attack:[{id:'ma_a1',name:'元素飛彈',desc:'三發追蹤'},{id:'ma_a2',name:'元素爆發',desc:'範圍元素傷害'}], support:[{id:'ma_s1',name:'魔力回流',desc:'施法回魔'}] },
+  priest: { attack:[{id:'pr_a1',name:'聖光術',desc:'對不死高傷'},{id:'pr_a2',name:'神聖之錘',desc:'範圍聖傷'}], support:[{id:'pr_s1',name:'治癒之光',desc:'持續治療'}] },
+  warlock: { attack:[{id:'wl_a1',name:'暗影爆',desc:'範圍暗影'},{id:'wl_a2',name:'生命吸取',desc:'傷害轉治療'}], support:[{id:'wl_s1',name:'暗影護體',desc:'反彈部分傷害'}] },
+  ninja: { attack:[{id:'ni_a1',name:'手裏劍・印',desc:'多發手裏劍'},{id:'ni_a2',name:'影襲',desc:'瞬身攻擊'}], support:[{id:'ni_s1',name:'影分身',desc:'分身協助'}] },
+  rogue: { attack:[{id:'ro_a1',name:'背刺',desc:'背後高暴擊'},{id:'ro_a2',name:'毒刃突襲',desc:'附毒攻擊'}], support:[{id:'ro_s1',name:'潛行',desc:'進入潛行'}] },
+  fighter: { attack:[{id:'fi_a1',name:'百裂拳',desc:'連續拳擊'},{id:'fi_a2',name:'崩拳',desc:'高傷重拳'}], support:[{id:'fi_s1',name:'氣勁',desc:'累積連擊點'}] }
+};
+
+const RESONANCE_BONUS = {
+  attack3: {name:'攻擊共鳴', atk:0.12},
+  support3: {name:'輔助共鳴', def:0.10, hp:0.08},
+  mixed: {name:'全能共鳴', atk:0.08, def:0.06}
+};
+
+function checkSkillResonance(p){
+  const all = {...(p.job1Skills||{}), ...(p.job2Skills||{})};
+  const atkCount = Object.keys(all).filter(k => k.includes('_a')).length;
+  const supCount = Object.keys(all).filter(k => k.includes('_s')).length;
+  if(atkCount >= 3 && supCount >= 2) return RESONANCE_BONUS.mixed;
+  if(atkCount >= 3) return RESONANCE_BONUS.attack3;
+  if(supCount >= 3) return RESONANCE_BONUS.support3;
+  return null;
+}
 // ========== CONSTANTS ==========
 const TILE=40, CHUNK=16, SAVE_KEY='wzw_koa_slots_v1', LEGACY_SAVE_KEY='wzw_koa_save_v1';
 // 2.5D 等角／斜向視圖（邏輯座標仍用正交格，僅繪製投影）
