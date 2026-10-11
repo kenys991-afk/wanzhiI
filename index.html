@@ -1203,6 +1203,11 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
 #mastery-panel .ms-row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dashed #3a3229}
 #mastery-panel .ms-lv{color:#7dff9a}
 
+
+.jt-branches{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.jt-node{opacity:1 !important}
+.jt-body{max-height:none}
+
 </style>
 <style id="desc-white">
 /* 解說文字一律白色（標題／名稱／稀有度色、數值高亮維持原色；inline 色不受影響） */
@@ -1220,6 +1225,11 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
 #mastery-panel b{color:#ffe9a8;display:block;margin-bottom:4px;font-size:.72rem}
 #mastery-panel .ms-row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dashed #3a3229}
 #mastery-panel .ms-lv{color:#7dff9a}
+
+
+.jt-branches{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.jt-node{opacity:1 !important}
+.jt-body{max-height:none}
 
 </style>
 </head>
@@ -6309,6 +6319,56 @@ function learnExclusiveSkill(jobId){
 
 
 // ===== 120級 進階精通職業（天使雕像轉職） =====
+
+// ===== 各地圖城堡王座雕像（精通技能／精通職業） =====
+const CASTLE_THRONES = [
+  {id:'throne_s', cont:'scambray', name:'史坎布雷王座雕像', x:12*TILE, y:6*TILE, emoji:'👑'},
+  {id:'throne_r', cont:'redrock', name:'赤晶王座雕像', x:12*TILE, y:6*TILE, emoji:'👑'},
+  {id:'throne_f', cont:'frozen', name:'冰封王座雕像', x:12*TILE, y:6*TILE, emoji:'👑'},
+  {id:'throne_l', cont:'lavaTower', name:'熔岩王座雕像', x:12*TILE, y:6*TILE, emoji:'👑'},
+  {id:'throne_a', cont:'abyssRoad', name:'深淵王座雕像', x:12*TILE, y:6*TILE, emoji:'👑'},
+  {id:'throne_sea', cont:'seaVast', name:'海域王座雕像', x:12*TILE, y:6*TILE, emoji:'👑'}
+];
+
+// 將王座雕像加入 NPC 列表
+if(typeof ALL_NPCS !== 'undefined'){
+  CASTLE_THRONES.forEach(t => {
+    ALL_NPCS.push({
+      id:t.id, role:'throne', static:1, name:t.name, x:t.x, y:t.y,
+      emoji:t.emoji, color:'#ffe080', cont:t.cont,
+      lines:{default:'王座低語：在此學習精通技能、轉精通職業。'}
+    });
+  });
+}
+
+function nearThrone(p, range){
+  range = range || 200;
+  const t = CASTLE_THRONES.find(th => th.cont === (p.continent||curCont) && Math.hypot(th.x - p.x, th.y - p.y) < range);
+  return t || null;
+}
+
+function openThroneMenu(){
+  const p = game.player;
+  const t = nearThrone(p);
+  if(!t){ msg('請靠近城堡王座雕像'); return; }
+  let opts = ['學習精通技能', '轉精通職業', '進階精通階位', '關閉'];
+  const choice = prompt(t.name + '\n' + opts.map((o,i)=> (i+1)+'. '+o).join('\n') + '\n請輸入編號：');
+  const n = parseInt(choice);
+  if(n === 1) learnMasterySkill(p.job);
+  else if(n === 2){
+    const mj = Object.values(MASTERY_JOBS||{}).find(m => m.parent === p.job);
+    if(mj) doMasteryJob(mj.id); else msg('目前職業無對應精通職業');
+  }
+  else if(n === 3) advanceMasteryStage();
+}
+
+// 靠近王座時可按 E 開啟（簡易綁定）
+document.addEventListener('keydown', e => {
+  if(e.key === 'e' || e.key === 'E'){
+    if(nearThrone(game.player, 180)) openThroneMenu();
+  }
+});
+
 const MASTERY_JOBS = {
   // 劍士／戰士線
   sword_saint: {id:'ms_sword_god', name:'劍神', icon:'⚔️', parent:'sword_saint', desc:'劍技登峰造極，扇形劍氣可貫穿', bonus:{atk:0.3, crit:0.1}},
@@ -6369,6 +6429,158 @@ function advanceMasteryStage(){
   if(ONLINE&&net) net.saveSoon=true;
   updateHUD();
 }
+
+
+// ===== 三轉後精通職業顯示 =====
+
+// 職業樹攤開
+document.addEventListener('click', function(e){
+  if(e.target && (e.target.id==='btn-jobtree' || e.target.closest('#btn-jobtree'))){
+    setTimeout(()=>{
+      document.querySelectorAll('.jt-branches').forEach(el => el.style.display='grid');
+      const body = document.querySelector('.jt-body');
+      if(body) body.style.maxHeight = '70vh';
+      renderMasteryJobs();
+    }, 200);
+  }
+});
+
+
+// 點擊職業顯示詳細職業樹
+
+// ===== 精通職業樹 =====
+
+// ===== 全部精通職業樹 =====
+function renderMasteryTree(){
+  const body = document.querySelector('.jt-body');
+  if(!body) return;
+  const old = body.querySelector('.mastery-tree');
+  if(old) old.remove();
+  let html = '<div class="mastery-tree" style="margin:12px 0;padding:10px;border:2px solid #c9a227;border-radius:6px;background:rgba(40,30,10,.5)">';
+  html += '<b style="color:#ffe9a8;font-size:.9rem">🌟 全部精通職業樹（120級）</b>';
+  html += '<div style="font-size:.68rem;color:#bfae8a;margin:4px 0 8px">轉職後回1級，可進階：精通1→2→3 → 大師1→2→3</div>';
+
+  const lines = [
+    {name:'劍士線', jobs:[
+      ['sword_saint','劍神'],
+      ['guardian','守衛神'],
+      ['warlord','戰神'],
+      ['paladin','聖騎士神'],
+      ['dragoon','龍神'],
+      ['dark_knight','暗黑神'],
+      ['bloodrager','血神'],
+      ['destroyer','毀滅神'],
+      ['executioner','斬首神']
+    ]},
+    {name:'法師線', jobs:[
+      ['pyromancer','炎神'],
+      ['cryomancer','冰神'],
+      ['stormcaller','雷神'],
+      ['bishop','聖神'],
+      ['inquisitor','審判神'],
+      ['cantor','聖歌神'],
+      ['necromancer','死靈神'],
+      ['warlock','咒術神'],
+      ['summoner','召魔神']
+    ]},
+    {name:'斥候線', jobs:[
+      ['shadow_ninja','影神'],
+      ['venom_ninja','毒神'],
+      ['fuma','風魔神'],
+      ['assassin','影殺神'],
+      ['shadowdancer','影舞神'],
+      ['master_thief','神偷神'],
+      ['fist_saint','武神'],
+      ['qigong','氣功神'],
+      ['monk','武僧神']
+    ]}
+  ];
+
+  lines.forEach(line => {
+    html += '<div style="margin-top:10px;font-size:.78rem;color:#ffe08a">' + line.name + '</div>';
+    line.jobs.forEach(([id, mjName]) => {
+      const job = JOBS[id];
+      if(job){
+        html += '<div style="padding:2px 0 2px 14px;font-size:.7rem">' + (job.icon||'') + ' ' + job.name + ' → <b style="color:#ffd27a">' + mjName + '</b>';
+        // 計算該職業相關精通技能數量
+        const skillCount = Object.keys(MASTERY_SKILLS||{}).filter(k => k === id || JOBS[k] && JOBS[k].parent === id || id.includes(k)).length;
+        html += '<div style="font-size:.62rem;color:#9ad8ff;padding-left:8px">精通技能：' + (skillCount || 1) + ' 個</div></div>';
+      }
+    });
+  });
+  html += '</div>';
+  body.insertAdjacentHTML('beforeend', html);
+}
+setTimeout(renderMasteryTree, 400);
+setInterval(()=>{ if(document.querySelector('.jt-body') && !document.querySelector('.mastery-tree')) renderMasteryTree(); }, 1200);
+
+
+function showJobDetail(jobId){
+  const job = JOBS[jobId];
+  if(!job) return;
+  const body = document.querySelector('.jt-body');
+  if(!body) return;
+  // 移除舊的詳細區塊
+  const old = body.querySelector('.job-detail');
+  if(old) old.remove();
+  let html = '<div class="job-detail" style="margin:10px 0;padding:10px;border:1px solid #ffe08a;border-radius:6px;background:rgba(0,0,0,.4)">';
+  html += '<b style="color:#ffe08a">' + (job.icon||'') + ' ' + job.name + '</b>';
+  html += '<div style="font-size:.75rem;margin-top:6px;line-height:1.5">' + (job.desc||'') + '</div>';
+  // 顯示下階職業
+  const children = Object.keys(JOBS).filter(k => JOBS[k].parent === jobId);
+  if(children.length){
+    html += '<div style="margin-top:8px;font-size:.7rem;color:#b8f0b8">下階職業：</div>';
+    html += children.map(c => {
+      const cj = JOBS[c];
+      return '<div style="padding:2px 0;cursor:pointer" onclick="showJobDetail(\''+c+'\')">→ ' + (cj.icon||'') + ' ' + cj.name + '</div>';
+    }).join('');
+  }
+  // 精通職業
+  const mj = Object.values(MASTERY_JOBS||{}).find(m => m.parent === jobId);
+  if(mj){
+    html += '<div style="margin-top:8px;font-size:.7rem;color:#ffd27a">精通職業：' + mj.icon + ' ' + mj.name + '</div>';
+  }
+  html += '<div style="margin-top:6px;font-size:.65rem;color:#bfae8a">點擊其他職業可切換</div></div>';
+  body.insertAdjacentHTML('afterbegin', html);
+}
+
+// 綁定職業節點點擊
+function bindJobClicks(){
+  document.querySelectorAll('.jt-node, .jt-chip').forEach(el => {
+    if(el._bound) return;
+    el._bound = true;
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function(e){
+      e.stopPropagation();
+      const name = el.textContent.trim();
+      const jobId = Object.keys(JOBS).find(k => JOBS[k].name === name || (JOBS[k].icon + ' ' + JOBS[k].name) === name);
+      if(jobId) showJobDetail(jobId);
+    });
+  });
+}
+setInterval(bindJobClicks, 800);
+
+function renderMasteryJobs(){
+  const body = document.querySelector('.jt-body') || document.getElementById('angel-panel');
+  if(!body) return;
+  let html = '<div class="mastery-display" style="margin:10px 0;padding:8px;border:1px solid #c9a227;border-radius:4px;background:rgba(0,0,0,.35)"><b style="color:#ffe9a8">三轉後精通職業</b><div style="font-size:.72rem;margin-top:6px;line-height:1.55">';
+  const list = [
+    '劍聖 → 劍神',
+    '血怒者 → 血神',
+    '雷電法師 → 雷神',
+    '主教 → 聖神',
+    '拳聖 → 武神',
+    '刺客 → 影神',
+    '毀滅者 → 毀滅神'
+  ];
+  html += list.map(x => '• ' + x).join('<br>') + '</div>';
+  html += '<div style="font-size:.62rem;color:#bfae8a;margin-top:5px">條件：120級 + 3技能精通Lv.3<br>轉職後回1級，可進階精通1～3 → 大師1～3</div></div>';
+  if(!body.querySelector('.mastery-display')){
+    body.insertAdjacentHTML('beforeend', html);
+  }
+}
+// 在職業樹開啟時呼叫
+setTimeout(()=>{ const btn=document.getElementById('btn-jobtree'); if(btn) btn.addEventListener('click', ()=>setTimeout(renderMasteryJobs,300)); },1000);
 
 function masteryTitle(p){
   if(!p || !p.masteryJob) return '';
