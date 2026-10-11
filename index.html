@@ -2602,8 +2602,8 @@ function nearestScarecrow(p,maxD){let best=null,bd=maxD;for(const s of SCARECROW
 function strawFx(s,n){spawnParticles(s.x,s.y-10,'#d8b860',n||10);spawnParticles(s.x,s.y-10,'#e0c040',Math.ceil((n||10)/2))}
 const ALL_NPCS=[
   // —— 天使雕像（轉職＋學習職業技能）：城市＝一轉／二轉；國家＝三轉 ——
-  {id:'angel_s',role:'angel',static:1,maxTier:2,name:'史坎布雷 天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#fff0b0',lines:{default:'天使低語：在此轉職、學習職業技能。\n【精通轉職】需 120 級 + 3 技能精通 Lv.3\n可學習本職業精通技能與專屬技能'}},
-  {id:'angel_r',role:'angel',static:1,maxTier:2,name:'赤晶鎮 天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#fff0b0',cont:'redrock',lines:{default:'天使低語：在此轉職、學習職業技能。\n【精通轉職】需 120 級 + 3 技能精通 Lv.3\n可學習本職業精通技能與專屬技能'}},
+  {id:'angel_s',role:'angel',static:1,maxTier:2,name:'史坎布雷 天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#fff0b0',lines:{default:'天使低語：在此轉職、學習職業技能。\n【精通轉職】需 120 級 + 3 技能精通 Lv.3\n可轉精通職業（精通1→3 → 大師1→3），轉職後等級回到1'}},
+  {id:'angel_r',role:'angel',static:1,maxTier:2,name:'赤晶鎮 天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#fff0b0',cont:'redrock',lines:{default:'天使低語：在此轉職、學習職業技能。\n【精通轉職】需 120 級 + 3 技能精通 Lv.3\n可轉精通職業（精通1→3 → 大師1→3），轉職後等級回到1'}},
   {id:'angel_f',role:'angel',static:1,maxTier:3,name:'國家天使雕像',x:8.5*TILE,y:8.2*TILE,emoji:'👼',color:'#ffe080',cont:'frozen',lines:{default:'國家天使：三轉與三轉技能在此授予。'}},
   // —— 史坎布雷 商店街（北側攤位）＋ 交易平台廣場（西南） ——
   {id:'vend_weapon',role:'vendor',shop:'weapon_s',name:'鐵匠 阿鋼',sign:'⚔️ 武器',stall:'#8a2a20',x:1.6*TILE,y:5.7*TILE,emoji:'⚒️',color:'#7a4a30',look:{hair:'#2a1a10',weapon:'axe',hat:null},
@@ -6303,6 +6303,90 @@ function learnExclusiveSkill(jobId){
   p.exclusiveSkills = p.exclusiveSkills || {};
   p.exclusiveSkills[ex.id] = 1;
   msg('✨ 學會專屬技能：'+ex.name);
+  if(ONLINE&&net) net.saveSoon=true;
+  updateHUD();
+}
+
+
+// ===== 120級 進階精通職業（天使雕像轉職） =====
+const MASTERY_JOBS = {
+  // 劍士／戰士線
+  sword_saint: {id:'ms_sword_god', name:'劍神', icon:'⚔️', parent:'sword_saint', desc:'劍技登峰造極，扇形劍氣可貫穿', bonus:{atk:0.3, crit:0.1}},
+  bloodrager: {id:'ms_blood_god', name:'血神', icon:'🩸', parent:'bloodrager', desc:'血怒極致，低血時傷害與吸血大幅提升', bonus:{atk:0.35, lifesteal:0.3}},
+  // 法師線
+  stormcaller: {id:'ms_storm_god', name:'雷神', icon:'⚡', parent:'stormcaller', desc:'雷電領域，連鎖目標增加並持續麻痺', bonus:{atk:0.32, mp:0.2}},
+  bishop: {id:'ms_holy_god', name:'聖神', icon:'⛪', parent:'bishop', desc:'神恩廣被，治療與聖盾大幅強化', bonus:{heal:0.5, def:0.15}},
+  // 斥候／武鬥線
+  fist_saint: {id:'ms_fist_god', name:'武神', icon:'🥋', parent:'fist_saint', desc:'拳意通天，連擊點轉化為範圍衝擊', bonus:{atk:0.3, crit:0.08}},
+  assassin: {id:'ms_shadow_god', name:'影神', icon:'💀', parent:'assassin', desc:'暗影極致，潛行必殺與瞬移強化', bonus:{atk:0.28, crit:0.12}},
+  // 通用高階
+  destroyer: {id:'ms_destroy_god', name:'毀滅神', icon:'💥', parent:'destroyer', desc:'大地之力，範圍擊退與緩速強化', bonus:{atk:0.3, hp:0.2}}
+};
+
+function canMasteryJob(p, mjId){
+  const mj = MASTERY_JOBS[mjId];
+  if(!mj || (p.level|0) < 120) return false;
+  if(p.job !== mj.parent) return false;
+  return canMasteryTransfer(p);
+}
+
+
+function doMasteryJob(mjId){
+  const p = game.player;
+  const mj = MASTERY_JOBS[mjId];
+  if(!canMasteryJob(p, mjId)){ msg('精通職業條件未達'); return; }
+  if(!confirm('確定轉職為「'+mj.name+'」？轉職後等級將回到 1 級')) return;
+  p.masteryJob = mjId;
+  p.masteryStage = 1;          // 精通1
+  p.level = 1;
+  p.exp = 0;
+  p.masteryBonus = (p.masteryBonus||0) + 0.15;
+  msg('✨ 精通轉職成功：成為「'+mj.name+'・精通1」！等級回到 1');
+  if(ONLINE&&net) net.saveSoon=true;
+  updateHUD();
+}
+
+function advanceMasteryStage(){
+  const p = game.player;
+  if(!p.masteryJob){ msg('尚未轉精通職業'); return; }
+  const stage = p.masteryStage|0;
+  if(stage >= 6){ msg('已達最高階（大師3）'); return; }
+  // 經驗需求：第1進階 = 原職業3倍，第2進階 = 第1次的3倍（以此類推）
+  const baseExp = 1000000; // 原職業到120的基礎經驗參考
+  const needMul = Math.pow(3, stage); // 1→3x, 2→9x, 3→27x...
+  const needExp = baseExp * needMul;
+  if((p.exp|0) < needExp && (p.level|0) < 120){
+    msg('進階需累積經驗 ' + needExp.toLocaleString() + '（目前 ' + (p.exp|0).toLocaleString() + '）');
+    return;
+  }
+  if(!confirm('確定進階？需要經驗 ' + needExp.toLocaleString())) return;
+  p.masteryStage = stage + 1;
+  p.level = 1;
+  p.exp = 0;
+  p.masteryBonus = (p.masteryBonus||0) + 0.1;
+  const titles = ['','精通1','精通2','精通3','大師1','大師2','大師3'];
+  msg('✨ 進階成功：'+titles[p.masteryStage]+'！等級回到 1');
+  if(ONLINE&&net) net.saveSoon=true;
+  updateHUD();
+}
+
+function masteryTitle(p){
+  if(!p || !p.masteryJob) return '';
+  const mj = MASTERY_JOBS[p.masteryJob];
+  const titles = ['','精通1','精通2','精通3','大師1','大師2','大師3'];
+  const st = titles[p.masteryStage|0] || '精通1';
+  return (mj ? mj.name : '') + '・' + st;
+}
+
+// old doMasteryJob removed
+function doMasteryJob_old(mjId){
+  const p = game.player;
+  const mj = MASTERY_JOBS[mjId];
+  if(!canMasteryJob(p, mjId)){ msg('精通職業條件未達'); return; }
+  if(!confirm('確定轉職為「'+mj.name+'」？')) return;
+  p.masteryJob = mjId;
+  p.masteryBonus = (p.masteryBonus||0) + 0.25;
+  msg('✨ 精通轉職成功：成為「'+mj.name+'」！技能全面強化');
   if(ONLINE&&net) net.saveSoon=true;
   updateHUD();
 }
