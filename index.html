@@ -1208,6 +1208,27 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
 .jt-node{opacity:1 !important}
 .jt-body{max-height:none}
 
+
+/* ===== 手機版面優化 ===== */
+body.ui-s #hud-top{transform:scale(.7) !important;max-width:48vw !important;min-width:0 !important}
+body.ui-s #hud-quest{transform:scale(.65) !important;max-width:42vw !important}
+body.ui-s #mastery-panel{width:120px !important;font-size:.6rem !important;right:4px !important;bottom:calc(70px + var(--sab)) !important;max-height:120px}
+body.ui-s #dock{font-size:.65rem}
+body.ui-s #dock-left{width:auto !important;max-width:42vw}
+body.ui-s .joy{width:100px !important;height:100px !important}
+body.ui-s .atk-btn{width:68px !important;height:68px !important}
+body.ui-s .act-btn{width:38px !important;height:38px !important}
+body.ui-s #msg-log{font-size:.6rem;max-width:70vw}
+
+
+/* 右邊與底部可見性修正 */
+body.ui-s #mastery-panel{display:none !important}
+body.ui-s #hud-quest{display:none !important}
+body.ui-s #dock{padding-bottom:calc(8px + var(--sab));max-height:28vh}
+body.ui-s #online-list{display:none !important}
+body.ui-s .act-btns{bottom:calc(80px + var(--sab)) !important;right:8px !important}
+body.ui-s .atk-btn{bottom:calc(70px + var(--sab)) !important;right:8px !important}
+
 </style>
 <style id="desc-white">
 /* 解說文字一律白色（標題／名稱／稀有度色、數值高亮維持原色；inline 色不受影響） */
@@ -1230,6 +1251,27 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
 .jt-branches{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .jt-node{opacity:1 !important}
 .jt-body{max-height:none}
+
+
+/* ===== 手機版面優化 ===== */
+body.ui-s #hud-top{transform:scale(.7) !important;max-width:48vw !important;min-width:0 !important}
+body.ui-s #hud-quest{transform:scale(.65) !important;max-width:42vw !important}
+body.ui-s #mastery-panel{width:120px !important;font-size:.6rem !important;right:4px !important;bottom:calc(70px + var(--sab)) !important;max-height:120px}
+body.ui-s #dock{font-size:.65rem}
+body.ui-s #dock-left{width:auto !important;max-width:42vw}
+body.ui-s .joy{width:100px !important;height:100px !important}
+body.ui-s .atk-btn{width:68px !important;height:68px !important}
+body.ui-s .act-btn{width:38px !important;height:38px !important}
+body.ui-s #msg-log{font-size:.6rem;max-width:70vw}
+
+
+/* 右邊與底部可見性修正 */
+body.ui-s #mastery-panel{display:none !important}
+body.ui-s #hud-quest{display:none !important}
+body.ui-s #dock{padding-bottom:calc(8px + var(--sab));max-height:28vh}
+body.ui-s #online-list{display:none !important}
+body.ui-s .act-btns{bottom:calc(80px + var(--sab)) !important;right:8px !important}
+body.ui-s .atk-btn{bottom:calc(70px + var(--sab)) !important;right:8px !important}
 
 </style>
 </head>
