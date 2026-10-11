@@ -1198,13 +1198,16 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
 #del-dlg .ws-act{display:flex;gap:8px;justify-content:center;margin-top:8px}#del-dlg .del-go{background:#8a1d1d!important;border-color:#ff6a5a!important;color:#fff!important}
 @keyframes delShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
-/* 血條移最左邊 + 隱藏6個技能圈 */
-body.ui-s #hud-top, body.ui-s .stats, body.ui-s #hp-bar, body.ui-s #mp-bar, body.ui-s #exp-bar {
-  left: 4px !important;
+/* 血條移最左邊 + 隱藏技能圈 */
+body.ui-s #hud-hpmp {
+  left: 6px !important;
   right: auto !important;
-  transform-origin: top left !important;
+  top: calc(6px + var(--sat)) !important;
+  width: 160px !important;
+  display: flex !important;
+  z-index: 30 !important;
 }
-body.ui-s .act-btns, body.ui-s .act-btn {
+body.ui-s .act-btns {
   display: none !important;
 }
 
@@ -1221,13 +1224,16 @@ body.ui-s .act-btns, body.ui-s .act-btn {
 .inv-gold.bump{animation:invGoldBump .45s ease-out}
 @keyframes invGoldBump{0%{transform:scale(1.12);box-shadow:0 0 10px rgba(255,216,96,.8)}100%{transform:scale(1)}}
 
-/* 血條移最左邊 + 隱藏6個技能圈 */
-body.ui-s #hud-top, body.ui-s .stats, body.ui-s #hp-bar, body.ui-s #mp-bar, body.ui-s #exp-bar {
-  left: 4px !important;
+/* 血條移最左邊 + 隱藏技能圈 */
+body.ui-s #hud-hpmp {
+  left: 6px !important;
   right: auto !important;
-  transform-origin: top left !important;
+  top: calc(6px + var(--sat)) !important;
+  width: 160px !important;
+  display: flex !important;
+  z-index: 30 !important;
 }
-body.ui-s .act-btns, body.ui-s .act-btn {
+body.ui-s .act-btns {
   display: none !important;
 }
 
