@@ -6451,13 +6451,27 @@ document.addEventListener('click', function(e){
 // ===== 精通職業樹 =====
 
 // ===== 全部精通職業樹 =====
+
+// 只顯示自己職業系
+function getPlayerLine(){
+  const p = game && game.player;
+  if(!p || !p.job) return null;
+  let j = p.job;
+  while(JOBS[j] && JOBS[j].parent) j = JOBS[j].parent;
+  if(j === 'swordsman' || ['warrior','knight','berserker','sword_saint','guardian','warlord','paladin','dragoon','dark_knight','bloodrager','destroyer','executioner'].includes(p.job)) return 'sword';
+  if(j === 'magician' || ['mage','priest','warlock','pyromancer','cryomancer','stormcaller','bishop','inquisitor','cantor','necromancer'].includes(p.job)) return 'mage';
+  if(j === 'scout' || ['ninja','rogue','fighter','shadow_ninja','venom_ninja','fuma','assassin','shadowdancer','master_thief','fist_saint','qigong','monk'].includes(p.job)) return 'scout';
+  return null;
+}
+
 function renderMasteryTree(){
   const body = document.querySelector('.jt-body');
   if(!body) return;
   const old = body.querySelector('.mastery-tree');
   if(old) old.remove();
   let html = '<div class="mastery-tree" style="margin:12px 0;padding:10px;border:2px solid #c9a227;border-radius:6px;background:rgba(40,30,10,.5)">';
-  html += '<b style="color:#ffe9a8;font-size:.9rem">🌟 全部精通職業樹（120級）</b>';
+  const line = getPlayerLine();
+  html += '<b style="color:#ffe9a8;font-size:.9rem">🌟 ' + (line==='sword'?'劍士':line==='mage'?'法師':line==='scout'?'斥候':'') + '系精通職業</b>';
   html += '<div style="font-size:.68rem;color:#bfae8a;margin:4px 0 8px">轉職後回1級，可進階：精通1→2→3 → 大師1→2→3</div>';
 
   const lines = [
