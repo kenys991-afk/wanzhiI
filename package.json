@@ -1,8 +1,16 @@
 {
-  "name": "wanzhi",
+  "name": "server",
   "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "ws": "^8.22.0",
-    "acorn": "^8.19.0"
+    "acorn": "^8.19.0",
+    "ws": "^8.22.0"
   }
 }

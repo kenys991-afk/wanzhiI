@@ -5,7 +5,7 @@ const http=require('http'), fs=require('fs'), path=require('path'), crypto=requi
 const { WebSocketServer }=require('ws');
 
 const PORT=+process.env.PORT||8770, HOST=process.env.HOST||'0.0.0.0';
-const GAME_DIR=__dirname, DATA_DIR=process.env.WZW_DATA||path.join(__dirname,'data'), DB_FILE=path.join(DATA_DIR,'db.json');
+const GAME_DIR=path.resolve(__dirname,'..'), DATA_DIR=process.env.WZW_DATA||path.join(__dirname,'data'), DB_FILE=path.join(DATA_DIR,'db.json');
 const TILE=40, EXP_POOL_CAP=1e9, GOLD_CAP=1e9, LV_MAX=120;
 const MAX_SPEED=0.65 /*px/ms：最快衝刺＋增益約 0.5*/, MOVE_BUCKET=700 /*瞬步技能緩衝*/;
 const GM_ACCOUNTS=['kokbot'], RESERVED=['kokbot','gm','admin','root','system','gamemaster'];
@@ -222,7 +222,7 @@ const ALLY_SKILLS={
   xp_heaven_judgement:{k:'heal',v:0.1,cd:20,icon:'⚜️',name:'天堂審判'},
 };
 // ===== 組隊（伺服器權威；最多 5 人；離線即離隊）=====
-const PARTY_MAX=3, PARTY_R=600, parties=new Map(), charParty=new Map(); let partySeq=1;
+const PARTY_MAX=5, PARTY_R=600, parties=new Map(), charParty=new Map(); let partySeq=1;
 function clientOfChar(ch){ for(const c of clients) if(c.char===ch) return c; return null; }
 function partyOfChar(ch){ const P=parties.get(charParty.get(ch)); return P?P.members.slice():null; }
 function partySys(P,text){ const o={t:'chat',ch:'p',from:'',sys:1,text,ts:Date.now()}; for(const ch of P.members){ const c=clientOfChar(ch); if(c) send(c,o); } }
