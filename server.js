@@ -13,6 +13,8 @@ const GAME_DIR=(()=>{
   }
   return __dirname;
 })(), DATA_DIR=process.env.WZW_DATA||path.join(__dirname,'data'), DB_FILE=path.join(DATA_DIR,'db.json');
+// 注意：Render 免費方案重新部署會清空本地檔案，帳號會消失。
+// 若要持久化，請設定環境變數 WZW_DATA 指向持久磁碟，或使用外部資料庫。
 const TILE=40, EXP_POOL_CAP=1e9, GOLD_CAP=1e9, LV_MAX=99;
 const MAX_SPEED=0.65 /*px/ms：最快衝刺＋增益約 0.5*/, MOVE_BUCKET=700 /*瞬步技能緩衝*/;
 const GM_ACCOUNTS=['kokbot'], RESERVED=['kokbot','gm','admin','root','system','gamemaster'];
@@ -21,10 +23,56 @@ const CONTS={scambray:{reqLv:1},redrock:{reqLv:40},frozen:{reqLv:70}};
 const HUBS=[['scambray',8,8],['scambray',36,8],['scambray',8,-30],['redrock',8,8],['frozen',8,8]];
 const log=(...a)=>console.log(new Date().toISOString(),...a);
 
+// ===== 外部資料庫（MongoDB Atlas） =====
+let mongoClient = null, mongoDb = null;
+async function initExternalDB(){
+  const uri = process.env.MONGODB_URI;
+  if(!uri){ log('未設定 MONGODB_URI，使用本地檔案'); return false; }
+  try{
+    const { MongoClient } = require('mongodb');
+    mongoClient = new MongoClient(uri);
+    await mongoClient.connect();
+    mongoDb = mongoClient.db('wanzhi');
+    log('外部資料庫已連線');
+    // 載入資料
+    const doc = await mongoDb.collection('gamedata').findOne({_id:'main'});
+    if(doc && doc.data){ db = Object.assign(db, doc.data); log('已從外部資料庫載入帳號', Object.keys(db.accounts||{}).length); }
+    return true;
+  }catch(e){ log('外部資料庫連線失敗', e.message); return false; }
+}
+async function saveExternalDB(){
+  if(!mongoDb) return;
+  try{
+    await mongoDb.collection('gamedata').updateOne(
+      {_id:'main'},
+      {$set:{data:db, updated:new Date()}},
+      {upsert:true}
+    );
+  }catch(e){ log('外部儲存失敗', e.message); }
+}
+// 啟動時初始化
+initExternalDB();
+// 每 30 秒同步到外部
+setInterval(()=>{ if(dirty) saveExternalDB(); }, 30000);
+
+
 // ---------- 資料庫（JSON） ----------
 fs.mkdirSync(DATA_DIR,{recursive:true});
 let db={version:1,accounts:{},chars:{},auction:[],sessions:{},soldDrops:{},mail:{},hist:{}};
-try{ if(fs.existsSync(DB_FILE)) db=Object.assign(db,JSON.parse(fs.readFileSync(DB_FILE,'utf8'))); }catch(e){ log('DB 讀取失敗，嘗試 .bak',e.message); try{ db=Object.assign(db,JSON.parse(fs.readFileSync(DB_FILE+'.bak','utf8'))); }catch(e2){ log('BAK 也失敗',e2.message); process.exit(1); } }
+try{ 
+  if(fs.existsSync(DB_FILE)){
+    const raw = fs.readFileSync(DB_FILE,'utf8');
+    if(raw && raw.trim()) db=Object.assign(db,JSON.parse(raw));
+  }
+}catch(e){ 
+  log('DB 讀取失敗，使用空白資料',e.message); 
+  try{ 
+    if(fs.existsSync(DB_FILE+'.bak')){
+      const bak = fs.readFileSync(DB_FILE+'.bak','utf8');
+      if(bak && bak.trim()) db=Object.assign(db,JSON.parse(bak));
+    }
+  }catch(e2){ log('BAK 也失敗，使用空白資料'); }
+}
 let dirty=false, writing=false;
 function markDirty(){ dirty=true; }
 function flush(){
@@ -628,4 +676,8 @@ wss.on('connection',(ws,req)=>{
   ws.on('close',()=>{ leaveGame(c); clients.delete(c); });
   ws.on('error',()=>{});
 });
-server.listen(PORT,HOST,()=>log(`萬王之王 Online 伺服器啟動：http://${HOST}:${PORT}/  (資料 ${DB_FILE})`));
+server.listen(PORT,HOST,()=>{
+  log(`萬王之王 Online 伺服器啟動：http://${HOST}:${PORT}/`);
+  log(`資料路徑：${DB_FILE}`);
+  log(`帳號數：${Object.keys(db.accounts||{}).length}`);
+});
