@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "acorn": "^8.19.0",
-    "ws": "^8.22.0"
+    "ws": "^8.22.0",
+    "mongodb": "^6.3.0",
+    "firebase": "^10.12.0"
   }
 }

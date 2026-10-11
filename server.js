@@ -23,6 +23,43 @@ const CONTS={scambray:{reqLv:1},redrock:{reqLv:40},frozen:{reqLv:70}};
 const HUBS=[['scambray',8,8],['scambray',36,8],['scambray',8,-30],['redrock',8,8],['frozen',8,8]];
 const log=(...a)=>console.log(new Date().toISOString(),...a);
 
+// ===== Firebase Firestore 儲存 =====
+const firebaseConfig = {
+  apiKey: "AIzaSyAxHXvESxlx4dZHeMqREnzhURxQ2cginIU",
+  authDomain: "wanzhi-f1aa8.firebaseapp.com",
+  projectId: "wanzhi-f1aa8",
+  storageBucket: "wanzhi-f1aa8.firebasestorage.app",
+  messagingSenderId: "413457827254",
+  appId: "1:413457827254:web:fd8222de89ba8bbf34ed17"
+};
+let firebaseApp = null, firestore = null;
+async function initFirebase(){
+  try{
+    const { initializeApp } = require('firebase/app');
+    const { getFirestore, doc, getDoc, setDoc } = require('firebase/firestore');
+    firebaseApp = initializeApp(firebaseConfig);
+    firestore = getFirestore(firebaseApp);
+    log('Firebase 已連線');
+    // 載入資料
+    const snap = await getDoc(doc(firestore, 'gamedata', 'main'));
+    if(snap.exists()){
+      const data = snap.data();
+      if(data && data.db){ db = Object.assign(db, data.db); log('已從 Firebase 載入帳號', Object.keys(db.accounts||{}).length); }
+    }
+    return true;
+  }catch(e){ log('Firebase 連線失敗', e.message); return false; }
+}
+async function saveFirebase(){
+  if(!firestore) return;
+  try{
+    const { doc, setDoc } = require('firebase/firestore');
+    await setDoc(doc(firestore, 'gamedata', 'main'), { db, updated: new Date().toISOString() });
+  }catch(e){ log('Firebase 儲存失敗', e.message); }
+}
+initFirebase();
+setInterval(()=>{ if(dirty) saveFirebase(); }, 20000);
+
+
 // ===== 外部資料庫（MongoDB Atlas） =====
 let mongoClient = null, mongoDb = null;
 async function initExternalDB(){
