@@ -6424,6 +6424,132 @@ function checkResonance(p){
   return null;
 }
 
+
+// ===== 任務欄移到自動打怪下方 =====
+// CSS 會在下方處理
+
+// ===== 洞窟數值調整：攻擊8倍 血8倍 防3倍 =====
+if(typeof HARD_CAVES !== 'undefined'){
+  HARD_CAVES.forEach(c => {
+    c.hpMul = 8;
+    c.atkMul = 8;
+    c.defMul = 3;
+  });
+}
+
+// ===== 裝備職業限制與等級 =====
+function canEquip(p, item){
+  if(!item) return false;
+  if(item.reqJob && item.reqJob !== p.job && item.reqJob !== 'all'){
+    msg('職業不符，無法裝備');
+    return false;
+  }
+  if(item.reqLv && (p.level|0) < item.reqLv){
+    msg('等級不足（需 '+item.reqLv+'）');
+    return false;
+  }
+  return true;
+}
+
+// ===== 一轉各職業技能 =====
+const FIRST_JOB_SKILLS = {
+  swordsman: [
+    {id:'s1_atk', name:'強力斬擊', type:'attack', desc:'近戰 150% 傷害'},
+    {id:'s1_sup', name:'戰吼', type:'support', desc:'短時間攻擊 +15%'},
+    {id:'s1_curse', name:'破甲', type:'curse', desc:'降低目標防禦'}
+  ],
+  magician: [
+    {id:'m1_atk', name:'火球術', type:'attack', desc:'遠程火焰傷害'},
+    {id:'m1_sup', name:'魔力護盾', type:'support', desc:'吸收部分傷害'},
+    {id:'m1_curse', name:'緩速', type:'curse', desc:'降低目標移速'}
+  ],
+  scout: [
+    {id:'c1_atk', name:'飛刀投擲', type:'attack', desc:'中距離物理傷害'},
+    {id:'c1_sup', name:'疾跑', type:'support', desc:'短時間移速提升'},
+    {id:'c1_curse', name:'毒刃', type:'curse', desc:'持續毒素傷害'}
+  ]
+};
+
+function learnFirstJobSkill(job, idx){
+  const list = FIRST_JOB_SKILLS[job];
+  if(!list || !list[idx]) return;
+  const sk = list[idx];
+  const p = game.player;
+  p.firstSkills = p.firstSkills || {};
+  if(p.firstSkills[sk.id]){ msg('已學會'); return; }
+  if(!confirm('學習「'+sk.name+'」？')) return;
+  p.firstSkills[sk.id] = 1;
+  msg('學會：'+sk.name);
+  if(ONLINE&&net) net.saveSoon=true;
+}
+
+
+// ===== 二轉職業技能 =====
+const SECOND_JOB_SKILLS = {
+  // 劍士線
+  warrior: [
+    {id:'w2_atk', name:'旋風斬', type:'attack', desc:'周圍迴旋斬擊'},
+    {id:'w2_sup', name:'戰鬥姿態', type:'support', desc:'攻擊與防禦提升'},
+    {id:'w2_curse', name:'擊退', type:'curse', desc:'擊退並緩速'}
+  ],
+  knight: [
+    {id:'k2_atk', name:'聖盾衝鋒', type:'attack', desc:'衝鋒傷害並暈眩'},
+    {id:'k2_sup', name:'守護之盾', type:'support', desc:'大幅減傷'},
+    {id:'k2_curse', name:'嘲諷', type:'curse', desc:'強制怪物攻擊自己'}
+  ],
+  berserker: [
+    {id:'b2_atk', name:'狂暴斬', type:'attack', desc:'高傷害但自損'},
+    {id:'b2_sup', name:'狂暴', type:'support', desc:'攻擊大增、防禦降低'},
+    {id:'b2_curse', name:'流血', type:'curse', desc:'持續流血傷害'}
+  ],
+  // 魔導士線
+  mage: [
+    {id:'mg2_atk', name:'元素飛彈', type:'attack', desc:'三發追蹤飛彈'},
+    {id:'mg2_sup', name:'魔力回流', type:'support', desc:'施法回魔'},
+    {id:'mg2_curse', name:'元素弱化', type:'curse', desc:'降低元素抗性'}
+  ],
+  priest: [
+    {id:'p2_atk', name:'聖光術', type:'attack', desc:'對不死系高傷害'},
+    {id:'p2_sup', name:'治癒之光', type:'support', desc:'持續治療'},
+    {id:'p2_curse', name:'淨化', type:'curse', desc:'移除負面狀態'}
+  ],
+  warlock: [
+    {id:'wl2_atk', name:'暗影爆', type:'attack', desc:'範圍暗影傷害'},
+    {id:'wl2_sup', name:'生命吸取', type:'support', desc:'傷害轉治療'},
+    {id:'wl2_curse', name:'詛咒', type:'curse', desc:'持續暗影傷害'}
+  ],
+  // 斥候線
+  ninja: [
+    {id:'n2_atk', name:'手裏劍・印', type:'attack', desc:'多發手裏劍'},
+    {id:'n2_sup', name:'影分身', type:'support', desc:'分身協助攻擊'},
+    {id:'n2_curse', name:'毒霧', type:'curse', desc:'範圍中毒'}
+  ],
+  rogue: [
+    {id:'r2_atk', name:'背刺', type:'attack', desc:'背後高暴擊傷害'},
+    {id:'r2_sup', name:'潛行', type:'support', desc:'進入潛行狀態'},
+    {id:'r2_curse', name:'毒刃', type:'curse', desc:'武器附毒'}
+  ],
+  fighter: [
+    {id:'f2_atk', name:'百裂拳', type:'attack', desc:'連續拳擊'},
+    {id:'f2_sup', name:'氣勁', type:'support', desc:'累積連擊點'},
+    {id:'f2_curse', name:'破勁', type:'curse', desc:'降低目標防禦'}
+  ]
+};
+
+function learnSecondJobSkill(job, idx){
+  const list = SECOND_JOB_SKILLS[job];
+  if(!list || !list[idx]){ msg('無此技能'); return; }
+  const sk = list[idx];
+  const p = game.player;
+  if((p.level|0) < 40){ msg('需 40 級以上'); return; }
+  p.secondSkills = p.secondSkills || {};
+  if(p.secondSkills[sk.id]){ msg('已學會'); return; }
+  if(!confirm('學習「'+sk.name+'」？')) return;
+  p.secondSkills[sk.id] = 1;
+  msg('學會二轉技能：'+sk.name);
+  if(ONLINE&&net) net.saveSoon=true;
+}
+
 function openInv(){
   if(!game||paused)return;
   const p=game.player;
