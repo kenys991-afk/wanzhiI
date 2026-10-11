@@ -1197,6 +1197,20 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
 #del-dlg .dq{display:flex;gap:6px;align-items:center;justify-content:center;font-size:.8rem;margin:6px 0}#del-dlg .dq input[type=number]{width:56px}#del-dlg .dq input[type=range]{width:100px}
 #del-dlg .ws-act{display:flex;gap:8px;justify-content:center;margin-top:8px}#del-dlg .del-go{background:#8a1d1d!important;border-color:#ff6a5a!important;color:#fff!important}
 @keyframes delShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* 血條移最左邊 + 隱藏技能圈 */
+body.ui-s #hud-hpmp {
+  left: 6px !important;
+  right: auto !important;
+  top: calc(6px + var(--sat)) !important;
+  width: 160px !important;
+  display: flex !important;
+  z-index: 30 !important;
+}
+body.ui-s .act-btns {
+  display: none !important;
+}
+
 </style>
 <style id="desc-white">
 /* 解說文字一律白色（標題／名稱／稀有度色、數值高亮維持原色；inline 色不受影響） */
@@ -1209,6 +1223,20 @@ body.ui-s #hud-hpmp .ex span{font-size:8px}
 .inv-gold .gv{color:#ffe9a8;font-variant-numeric:tabular-nums}
 .inv-gold.bump{animation:invGoldBump .45s ease-out}
 @keyframes invGoldBump{0%{transform:scale(1.12);box-shadow:0 0 10px rgba(255,216,96,.8)}100%{transform:scale(1)}}
+
+/* 血條移最左邊 + 隱藏技能圈 */
+body.ui-s #hud-hpmp {
+  left: 6px !important;
+  right: auto !important;
+  top: calc(6px + var(--sat)) !important;
+  width: 160px !important;
+  display: flex !important;
+  z-index: 30 !important;
+}
+body.ui-s .act-btns {
+  display: none !important;
+}
+
 </style>
 </head>
 <body>

@@ -5,7 +5,14 @@ const http=require('http'), fs=require('fs'), path=require('path'), crypto=requi
 const { WebSocketServer }=require('ws');
 
 const PORT=+process.env.PORT||8770, HOST=process.env.HOST||'0.0.0.0';
-const GAME_DIR=path.resolve(__dirname,'..'), DATA_DIR=process.env.WZW_DATA||path.join(__dirname,'data'), DB_FILE=path.join(DATA_DIR,'db.json');
+const GAME_DIR=(()=>{
+  const fs=require('fs'), path=require('path');
+  const candidates=[__dirname, path.resolve(__dirname,'..'), process.cwd(), '/opt/render/project', '/opt/render/project/src'];
+  for(const c of candidates){
+    try{ if(fs.existsSync(path.join(c,'index.html'))) return c; }catch(e){}
+  }
+  return __dirname;
+})(), DATA_DIR=process.env.WZW_DATA||path.join(__dirname,'data'), DB_FILE=path.join(DATA_DIR,'db.json');
 const TILE=40, EXP_POOL_CAP=1e9, GOLD_CAP=1e9, LV_MAX=120;
 const MAX_SPEED=0.65 /*px/ms：最快衝刺＋增益約 0.5*/, MOVE_BUCKET=700 /*瞬步技能緩衝*/;
 const GM_ACCOUNTS=['kokbot'], RESERVED=['kokbot','gm','admin','root','system','gamemaster'];
