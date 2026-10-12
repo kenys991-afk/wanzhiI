@@ -6771,6 +6771,71 @@ const INV_COLS = 6;
 const INV_PAGES = 3;
 function getInvPageSize(){ return INV_ROWS * INV_COLS; }
 
+
+// ===== 四轉職業 =====
+const JOB4 = {
+  sword_god: {name:'滅世劍帝', parent:'sword_saint', icon:'⚔️'},
+  blood_god: {name:'血獄魔君', parent:'bloodrager', icon:'🩸'},
+  storm_god: {name:'天罰雷帝', parent:'stormcaller', icon:'⚡'},
+  holy_god: {name:'聖裁神皇', parent:'bishop', icon:'⛪'},
+  fist_god: {name:'破天武尊', parent:'fist_saint', icon:'🥋'},
+  shadow_god: {name:'無影殺神', parent:'assassin', icon:'💀'}
+};
+
+function doJob4Transfer(jobId){
+  const p = game.player;
+  const j4 = JOB4[jobId];
+  if(!j4){ msg('無此四轉職業'); return; }
+  if((p.level|0) < 99){ msg('需 99 級'); return; }
+  if(!confirm('確定轉職為「'+j4.name+'」？')) return;
+  p.job4 = jobId;
+  p.level = 1;
+  p.exp = 0;
+  msg('✨ 四轉成功：'+j4.name);
+  if(ONLINE&&net) net.saveSoon=true;
+  updateHUD();
+}
+
+// ===== 地圖下方洞窟欄位 =====
+function openCavePanel(){
+  let html = '<div style="padding:8px;background:#1a1410;border:1px solid #5c5346;border-radius:6px">';
+  html += '<b>洞窟列表</b><br>';
+  (HARD_CAVES||[]).forEach((c,i)=>{
+    html += '<div style="margin:4px 0;cursor:pointer" onclick="goToCave('+i+')">'+c.name+'（建議 '+c.lv+'）</div>';
+  });
+  html += '</div>';
+  const panel = document.getElementById('cave-panel') || document.createElement('div');
+  panel.id = 'cave-panel';
+  panel.style.cssText = 'position:fixed;bottom:80px;left:8px;z-index:50;color:#ffe9c8;font-size:12px';
+  panel.innerHTML = html;
+  document.body.appendChild(panel);
+}
+function goToCave(idx){
+  const c = (HARD_CAVES||[])[idx];
+  if(!c) return;
+  msg('前往：'+c.name);
+  // 簡易尋路提示（實際移動可再擴充）
+  if(game && game.player){
+    game.player.targetCave = c.id;
+  }
+}
+
+
+function showEquipReq(item){
+  if(!item) return;
+  let msg = item.name || '裝備';
+  if(item.reqJob && item.reqJob !== 'all'){
+    msg += '\n職業限制：' + item.reqJob;
+  }
+  if(item.reqLv){
+    msg += '\n需求等級：' + item.reqLv;
+  }
+  if(item.affixes && item.affixes.length){
+    msg += '\n附加：' + item.affixes.map(a=>a.k+'+'+a.v).join('、');
+  }
+  alert(msg);
+}
+
 function openInv(){
   if(!game||paused)return;
   const p=game.player;
