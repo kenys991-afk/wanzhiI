@@ -6836,6 +6836,105 @@ function showEquipReq(item){
   alert(msg);
 }
 
+
+// ===== 四轉技能 =====
+const JOB4_SKILLS = {
+  sword_god: [
+    {id:'sg_a1', name:'滅世劍氣', desc:'前方超大範圍劍氣'},
+    {id:'sg_s1', name:'劍域', desc:'周圍持續劍氣傷害'}
+  ],
+  blood_god: [
+    {id:'bg_a1', name:'血獄爆發', desc:'低血時傷害大幅提升'},
+    {id:'bg_s1', name:'血海', desc:'範圍吸血'}
+  ],
+  storm_god: [
+    {id:'tg_a1', name:'天罰雷擊', desc:'大範圍連鎖雷電'},
+    {id:'tg_s1', name:'雷域', desc:'持續麻痺周圍'}
+  ],
+  holy_god: [
+    {id:'hg_a1', name:'聖裁審判', desc:'聖光柱高傷害'},
+    {id:'hg_s1', name:'神恩', desc:'強力治療與淨化'}
+  ],
+  fist_god: [
+    {id:'fg_a1', name:'破天拳', desc:'超大範圍衝擊'},
+    {id:'fg_s1', name:'武意', desc:'連擊轉化高倍率'}
+  ],
+  shadow_god: [
+    {id:'shg_a1', name:'無影殺', desc:'瞬移背後必殺'},
+    {id:'shg_s1', name:'影域', desc:'潛行中傷害大增'}
+  ]
+};
+
+function learnJob4Skill(skillId){
+  const p = game.player;
+  if(!p.job4){ msg('需先轉四轉職業'); return; }
+  p.job4Skills = p.job4Skills || {};
+  if(p.job4Skills[skillId]){ msg('已學會'); return; }
+  if(!confirm('學習此四轉技能？')) return;
+  p.job4Skills[skillId] = 1;
+  msg('學會四轉技能');
+  if(ONLINE&&net) net.saveSoon=true;
+}
+
+// 天使雕像：可轉四轉、學四轉技能
+function openAngelStatue(){
+  const p = game.player;
+  const c = prompt('天使雕像\n1.轉四轉職業\n2.學習四轉技能\n請輸入：');
+  if(c==='1'){
+    const list = Object.keys(JOB4).map(k=>JOB4[k].name+'('+k+')').join('\n');
+    const id = prompt('選擇四轉：\n'+list+'\n輸入代號：');
+    if(id && JOB4[id]) doJob4Transfer(id);
+  } else if(c==='2'){
+    const skills = JOB4_SKILLS[p.job4] || [];
+    if(!skills.length){ msg('無可用技能'); return; }
+    const names = skills.map((s,i)=>(i+1)+'.'+s.name).join('\n');
+    const n = prompt('學習技能：\n'+names+'\n輸入編號：');
+    const idx = (n|0)-1;
+    if(skills[idx]) learnJob4Skill(skills[idx].id);
+  }
+}
+
+
+// ===== 技能升級：滿級後可再升 2 級（需熟練度+經驗） =====
+const SKILL_MAX_BASE = 10;
+const SKILL_EXTRA_MAX = 2;
+
+function getSkillLevel(p, skillId){
+  const lv = (p.skillLevels && p.skillLevels[skillId]) || 1;
+  return lv;
+}
+
+function upgradeSkill(skillId){
+  const p = game.player;
+  p.skillLevels = p.skillLevels || {};
+  p.skillProf = p.skillProf || {};
+  const cur = getSkillLevel(p, skillId);
+  const max = SKILL_MAX_BASE + SKILL_EXTRA_MAX;
+  if(cur >= max){ msg('已達最高等級'); return; }
+  
+  const needProf = cur * 50;
+  const needExp = cur * 1000;
+  const prof = p.skillProf[skillId] || 0;
+  
+  if(prof < needProf){ msg('熟練度不足（需 '+needProf+'）'); return; }
+  if((p.exp|0) < needExp){ msg('經驗不足（需 '+needExp+'）'); return; }
+  
+  if(!confirm('升級技能？消耗熟練度 '+needProf+'、經驗 '+needExp)) return;
+  
+  p.skillProf[skillId] = prof - needProf;
+  p.exp -= needExp;
+  p.skillLevels[skillId] = cur + 1;
+  msg('技能升級至 Lv.' + p.skillLevels[skillId]);
+  if(ONLINE&&net) net.saveSoon=true;
+  updateHUD();
+}
+
+function addSkillProf(skillId, amount){
+  const p = game.player;
+  p.skillProf = p.skillProf || {};
+  p.skillProf[skillId] = (p.skillProf[skillId]||0) + (amount||1);
+}
+
 function openInv(){
   if(!game||paused)return;
   const p=game.player;
