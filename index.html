@@ -11016,6 +11016,42 @@ function showCaveInfo(){
   alert(s);
 }
 
+
+// ===== 伺服器登入 =====
+async function serverRegister(acc, pw){
+  const r = await fetch('/api/register', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({acc, pw})
+  });
+  return await r.json();
+}
+async function serverLogin(acc, pw){
+  const r = await fetch('/api/login', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({acc, pw})
+  });
+  const data = await r.json();
+  if(data.ok && data.token){
+    localStorage.setItem('wzw_token', data.token);
+    localStorage.setItem('wzw_acc', acc);
+  }
+  return data;
+}
+// 覆寫原本的登入
+const _origLogin = window.doLogin;
+window.doLogin = async function(acc, pw){
+  const result = await serverLogin(acc, pw);
+  if(result.ok){
+    msg('登入成功');
+    if(typeof enterGame === 'function') enterGame();
+  } else {
+    msg(result.msg || '登入失敗');
+  }
+  return result;
+};
+
 </script>
 </body>
 </html>
