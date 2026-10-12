@@ -659,3 +659,35 @@ async function backupToFirebase(data){
 }
 initFirebaseBackup();
 setInterval(()=>{ if(typeof db !== 'undefined') backupToFirebase(db); }, 30000);
+
+
+// ===== 帳號 API =====
+const crypto = require('crypto');
+function hashPw(pw){ return crypto.createHash('sha256').update(pw||'').digest('hex'); }
+
+// 在現有 server 處理中加入（需手動整合）
+async function handleAccountAPI(req, res, pathname, body){
+  if(!fbDb) return false;
+  const {doc, getDoc, setDoc} = require('firebase/firestore');
+  
+  if(pathname === '/api/reg' && req.method === 'POST'){
+    const d = JSON.parse(body||'{}');
+    const ref = doc(fbDb, 'accounts', d.acc||'');
+    const snap = await getDoc(ref);
+    if(snap.exists()){ res.end(JSON.stringify({ok:0,msg:'已存在'})); return true; }
+    await setDoc(ref, {pw: hashPw(d.pw), created: Date.now()});
+    res.end(JSON.stringify({ok:1}));
+    return true;
+  }
+  if(pathname === '/api/login' && req.method === 'POST'){
+    const d = JSON.parse(body||'{}');
+    const ref = doc(fbDb, 'accounts', d.acc||'');
+    const snap = await getDoc(ref);
+    if(!snap.exists() || snap.data().pw !== hashPw(d.pw)){
+      res.end(JSON.stringify({ok:0,msg:'錯誤'})); return true;
+    }
+    res.end(JSON.stringify({ok:1, acc: d.acc}));
+    return true;
+  }
+  return false;
+}

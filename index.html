@@ -11172,6 +11172,19 @@ requestAnimationFrame(loop);
   };
 })();
 
+
+// ===== 帳號同步到 Firebase（保留本地備份） =====
+async function syncAccountToServer(acc, pw, isReg){
+  try{
+    const r = await fetch(isReg ? '/api/reg' : '/api/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({acc, pw})
+    });
+    return await r.json();
+  }catch(e){ return {ok:0}; }
+}
+
 </script>
 </body>
 </html>
