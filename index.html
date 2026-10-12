@@ -11185,6 +11185,55 @@ async function syncAccountToServer(acc, pw, isReg){
   }catch(e){ return {ok:0}; }
 }
 
+
+// ===== Firebase 認證 =====
+window.fbAuth = {
+  async register(acc, pw) {
+    const r = await fetch('/api/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({acc, pw})
+    });
+    return await r.json();
+  },
+  async login(acc, pw) {
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({acc, pw})
+    });
+    const data = await r.json();
+    if (data.ok) {
+      localStorage.setItem('fb_acc', acc);
+      localStorage.setItem('fb_login', '1');
+    }
+    return data;
+  },
+  async save(acc, data) {
+    await fetch('/api/save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({acc, data})
+    });
+  },
+  async load(acc) {
+    const r = await fetch('/api/load', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({acc})
+    });
+    return await r.json();
+  }
+};
+
+// 自動存檔
+setInterval(() => {
+  const acc = localStorage.getItem('fb_acc');
+  if (acc && typeof game !== 'undefined' && game && game.player) {
+    fbAuth.save(acc, {player: game.player, t: Date.now()}).catch(()=>{});
+  }
+}, 20000);
+
 </script>
 </body>
 </html>
