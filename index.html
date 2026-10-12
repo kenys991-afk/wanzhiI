@@ -2651,7 +2651,7 @@ const ALL_NPCS=[
     }},
   // —— 大陸傳送師（各大陸主城）——
   {id:'portal_scambray',role:'portal',name:'大陸傳送師 艾琳',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#6a50c0',cont:'scambray',
-    lines:{default:'傳送門通往其他大陸。目前開放：史坎布雷大陸。'}},
+    lines:{default:'傳送門通往其他大陸。紅石水晶大陸（中級）需要 Lv.40，冰封亡城大陸（上級）需要 Lv.70。'}},
   // —— 紅石水晶大陸：赤晶鎮 ——
   {id:'portal_red',role:'portal',name:'大陸傳送師 赤焰',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#c04030',cont:'redrock',
     lines:{default:'岩漿的熱氣連傳送門都烤得發燙。要回史坎布雷，或是前往北方的冰封亡城？'}},
@@ -5034,13 +5034,6 @@ function setAcctMode(mode){
   acctEl('btn-acct-switch').textContent=(reg||setpw)?'返回登入':'註冊新帳號';
   acctEl('acct-pw').value=''; acctEl('acct-pw2').value='';
 }
-
-// 其他大陸暫不開放
-if(typeof CONTINENTS !== 'undefined'){
-  delete CONTINENTS.redrock;
-  delete CONTINENTS.frozen;
-}
-
 function showLogin(){
   if(ONLINE) netBuildUI();
   stopCharPreview();
