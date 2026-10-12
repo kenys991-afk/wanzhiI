@@ -1,18 +1,7 @@
 {
-  "name": "server",
+  "name": "wanzhi",
   "version": "1.0.0",
-  "description": "",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "acorn": "^8.19.0",
-    "ws": "^8.22.0",
-    "mongodb": "^6.3.0",
-    "firebase": "^10.12.0"
-  }
+  "scripts": {"start": "node server.js"},
+  "dependencies": {"firebase": "^10.12.0"}
 }
