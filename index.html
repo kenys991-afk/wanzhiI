@@ -2651,9 +2651,9 @@ const ALL_NPCS=[
     }},
   // —— 大陸傳送師（各大陸主城）——
   {id:'portal_scambray',role:'portal',name:'大陸傳送師 艾琳',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#6a50c0',cont:'scambray',
-    lines:{default:'目前開放：史坎布雷大陸。'}},
+    lines:{default:'傳送門通往其他大陸。紅石水晶大陸（中級）需要 Lv.40，冰封亡城大陸（上級）需要 Lv.70。'}},
   // —— 紅石水晶大陸：赤晶鎮 ——
-  // DISABLED {id:'portal_red',role:'portal',name:'大陸傳送師 赤焰',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#c04030',cont:'redrock',
+  {id:'portal_red',role:'portal',name:'大陸傳送師 赤焰',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#c04030',cont:'redrock',
     lines:{default:'岩漿的熱氣連傳送門都烤得發燙。要回史坎布雷，或是前往北方的冰封亡城？'}},
   {id:'merchant_red',role:'shop',shop:'general_old',name:'礦鎮商人 老鐵',x:11*TILE,y:9*TILE,emoji:'🧔',color:'#a04020',cont:'redrock',
     lines:{default:'赤晶鎮雜貨鋪！藥水、武器、防具一應俱全——礦坑裡用得上的都有。'}},
@@ -2662,7 +2662,7 @@ const ALL_NPCS=[
   {id:'chief_red',name:'礦工頭目 葛倫',x:8*TILE,y:6*TILE,emoji:'⛏️',color:'#7a5030',cont:'redrock',
     lines:{default:'紅晶礦脈會發光，熔岩裂縫可別踩進去。晶石魔像越往外越多——量力而為！'}},
   // —— 冰封亡城大陸：霜燼要塞 ——
-  // DISABLED {id:'portal_frost',role:'portal',name:'大陸傳送師 霜語',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#4080c0',cont:'frozen',
+  {id:'portal_frost',role:'portal',name:'大陸傳送師 霜語',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#4080c0',cont:'frozen',
     lines:{default:'寒風會吹散傳送門的光……趁還穩定，要往哪去？'}},
   {id:'merchant_frost',role:'shop',shop:'general_old',name:'要塞軍需官',x:11*TILE,y:9*TILE,emoji:'🧔',color:'#405a80',cont:'frozen',
     lines:{default:'要塞軍需處。補給有限，但藥水和裝備都還買得到。'}},
@@ -6227,6 +6227,119 @@ function drawQuestPath(){ if(!QP||!QP.pts||QP.pendCont) return; const p=game.pla
 function drawQuestPathMini(cx,cy,scale,ptx,pty){ if(!QP||!QP.pts||QP.pendCont) return; const p=game.player, pts=[{x:p.x,y:p.y}].concat(QP.pts.slice(QP.i)); if(!QP.via) pts[pts.length-1]={x:QP.tgt.x,y:QP.tgt.y};
   ctx.save(); ctx.beginPath(); pts.forEach((q,i)=>{ const x=cx+(q.x/TILE-ptx)*scale, y=cy+(q.y/TILE-pty)*scale; if(i) ctx.lineTo(x,y); else ctx.moveTo(x,y); });
   ctx.strokeStyle='#ffd060'; ctx.lineWidth=2; ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]); const q=pts[pts.length-1]; ctx.beginPath(); ctx.arc(cx+(q.x/TILE-ptx)*scale,cy+(q.y/TILE-pty)*scale,3.5,0,Math.PI*2); ctx.fillStyle='#ffd060'; ctx.fill(); ctx.restore(); }
+
+
+// ===== 等級上限 99 + 經驗 /100 =====
+const LV_CAP = 99;
+function scaledExp(base){ return Math.max(1, Math.floor(base / 100)); }
+
+// ===== 精通職業（4轉） =====
+const MASTERY_JOBS = {
+  sword_saint: {name:'劍神', icon:'⚔️', skills:['ms_sword1','ms_sword2']},
+  bloodrager: {name:'血神', icon:'🩸', skills:['ms_blood1','ms_blood2']},
+  stormcaller: {name:'雷神', icon:'⚡', skills:['ms_storm1','ms_storm2']},
+  bishop: {name:'聖神', icon:'⛪', skills:['ms_holy1','ms_holy2']},
+  fist_saint: {name:'武神', icon:'🥋', skills:['ms_fist1','ms_fist2']},
+  assassin: {name:'影神', icon:'💀', skills:['ms_shadow1','ms_shadow2']}
+};
+
+const MASTERY_SKILLS = {
+  ms_sword1: {name:'劍氣縱橫', desc:'前方劍氣 180% 傷害'},
+  ms_sword2: {name:'無雙劍域', desc:'周圍劍氣持續傷害'},
+  ms_blood1: {name:'血怒爆發', desc:'低血時傷害 +40%'},
+  ms_blood2: {name:'血海狂瀾', desc:'範圍吸血斬'},
+  ms_storm1: {name:'雷霆萬鈞', desc:'大範圍連鎖雷電'},
+  ms_storm2: {name:'雷神領域', desc:'持續麻痺周圍敵人'},
+  ms_holy1: {name:'聖光洗禮', desc:'強力治療並淨化'},
+  ms_holy2: {name:'神罰審判', desc:'聖光柱傷害不死系'},
+  ms_fist1: {name:'破天一拳', desc:'超大範圍衝擊波'},
+  ms_fist2: {name:'連擊極意', desc:'連擊點轉化高倍率'},
+  ms_shadow1: {name:'影殺瞬斬', desc:'瞬移背後必殺'},
+  ms_shadow2: {name:'暗影領域', desc:'潛行中傷害大幅提升'}
+};
+
+function doMasteryTransfer(jobId){
+  const p = game.player;
+  const mj = MASTERY_JOBS[jobId];
+  if(!mj){ msg('無此精通職業'); return; }
+  if((p.level|0) < 99){ msg('需達到 99 級'); return; }
+  if(!confirm('確定轉職為「'+mj.name+'」？等級將回到 1 級')) return;
+  p.masteryJob = jobId;
+  p.masteryStage = 1;
+  p.level = 1;
+  p.exp = 0;
+  msg('✨ 轉職成功：成為「'+mj.name+'」！等級回到 1');
+  if(ONLINE&&net) net.saveSoon=true;
+  updateHUD();
+}
+
+function advanceMastery(){
+  const p = game.player;
+  if(!p.masteryJob){ msg('尚未轉精通職業'); return; }
+  const stage = p.masteryStage|0;
+  if(stage >= 3){ msg('已達最高階'); return; }
+  const muls = [0, 1.5, 2, 2.5];
+  const need = Math.floor(1000000 * muls[stage]);
+  if((p.exp|0) < need){ msg('進階需經驗 '+need.toLocaleString()); return; }
+  if(!confirm('確定進階到精通'+(stage+1)+'？')) return;
+  p.masteryStage = stage + 1;
+  p.level = 1;
+  p.exp = 0;
+  msg('✨ 進階成功：精通'+p.masteryStage);
+  if(ONLINE&&net) net.saveSoon=true;
+  updateHUD();
+}
+
+function learnMasterySkill(skillId){
+  const p = game.player;
+  if(!p.masteryJob){ msg('需先轉精通職業'); return; }
+  const sk = MASTERY_SKILLS[skillId];
+  if(!sk) return;
+  p.masterySkills = p.masterySkills || {};
+  if(p.masterySkills[skillId]){ msg('已學會'); return; }
+  if(!confirm('學習「'+sk.name+'」？')) return;
+  p.masterySkills[skillId] = 1;
+  msg('✨ 學會精通技能：'+sk.name);
+  if(ONLINE&&net) net.saveSoon=true;
+}
+
+
+// ===== 高難度洞窟 4 處（血量5倍、攻擊5倍、防禦1.5倍） =====
+const HARD_CAVES = [
+  {id:'cave_lava', name:'熔岩深窟', cont:'lavaTower', lv:80, hpMul:5, atkMul:5, defMul:1.5},
+  {id:'cave_abyss', name:'深淵魔窟', cont:'abyssRoad', lv:85, hpMul:5, atkMul:5, defMul:1.5},
+  {id:'cave_sea', name:'海域暗窟', cont:'seaVast', lv:90, hpMul:5, atkMul:5, defMul:1.5},
+  {id:'cave_frozen', name:'冰封極窟', cont:'frozen', lv:95, hpMul:5, atkMul:5, defMul:1.5}
+];
+
+// 洞窟掉落：一般到紅裝，機率低
+function caveDropRarity(){
+  const r = Math.random();
+  if(r < 0.02) return 3;      // 紅 2%
+  if(r < 0.08) return 2;      // 藍 6%
+  if(r < 0.20) return 1;      // 綠 12%
+  return 0;                   // 白 80%
+}
+
+// 裝備附加屬性
+function addAffixes(item, rarity){
+  if(!item || !item.slot) return item;
+  const affixCount = rarity >= 2 ? 2 : (rarity >= 1 ? 1 : 0);
+  item.affixes = [];
+  const pool = [
+    {k:'atk', v:[3,8]},
+    {k:'def', v:[2,6]},
+    {k:'hp', v:[20,60]},
+    {k:'mp', v:[15,40]},
+    {k:'crit', v:[0.02,0.06]}
+  ];
+  for(let i=0; i<affixCount; i++){
+    const a = pool[Math.floor(Math.random()*pool.length)];
+    const val = a.v[0] + Math.random()*(a.v[1]-a.v[0]);
+    item.affixes.push({k:a.k, v: Math.round(val*100)/100});
+  }
+  return item;
+}
 
 function openInv(){
   if(!game||paused)return;
@@ -10982,22 +11095,6 @@ setInterval(()=>{if(game&&!paused)saveGame()},30000);
 
 requestAnimationFrame(loop);
 })();
-
-// ===== 安全移除其他大陸（只改顯示） =====
-(function(){
-  const origOpen = window.openPortal || function(){};
-  // 攔截傳送對話
-  const checkPortal = () => {
-    document.querySelectorAll('div, button, span').forEach(el => {
-      const t = el.textContent || '';
-      if((t.includes('紅石水晶') || t.includes('冰封亡城')) && el.offsetParent !== null){
-        el.style.display = 'none';
-      }
-    });
-  };
-  setInterval(checkPortal, 500);
-})();
-
 </script>
 </body>
 </html>
