@@ -11039,107 +11039,23 @@ window.doLogin = async function(acc, pw){
 };
 
 
-// ===== 強制伺服器登入 =====
-window.ONLINE = true;
-
-const _origAcctSubmit = window.acctSubmit;
-window.acctSubmit = async function(){
-  const raw = document.getElementById('acct-name')?.value?.trim() || '';
-  const pw = document.getElementById('acct-pw')?.value || '';
-  const mode = window.acctMode || 'login';
-  
-  if(!raw) return alert('請輸入帳號');
-  
-  try{
-    const endpoint = mode === 'register' ? '/api/register' : '/api/login';
-    const r = await fetch(endpoint, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({acc: raw, pw})
-    });
-    const data = await r.json();
-    if(data.ok){
-      if(data.token) localStorage.setItem('wzw_token', data.token);
-      localStorage.setItem('wzw_acc', raw);
-      alert(mode === 'register' ? '註冊成功' : '登入成功');
-      if(typeof acctEnter === 'function') acctEnter(raw);
-    } else {
-      alert(data.msg || '失敗');
-    }
-  }catch(e){
-    alert('連線失敗：' + e.message);
-  }
-};
-
-
-// ===== 強制隱藏其他大陸 =====
-function forceHideContinents(){
-  const keywords = [  '前往 紅石', '前往 冰封'];
-  document.querySelectorAll('*').forEach(el => {
-    if(el.children.length === 0){
-      const t = el.textContent || '';
-      for(const k of keywords){
-        if(t.includes(k)){
-          let p = el;
-          for(let i=0; i<5 && p; i++){
-            if(p.tagName === 'DIV' || p.tagName === 'BUTTON'){
-              p.style.display = 'none';
-              break;
-            }
-            p = p.parentElement;
-          }
-        }
-      }
-    }
-  });
-}
-setInterval(forceHideContinents, 1000);
-setTimeout(forceHideContinents, 100);
-
-
-// ===== 自動存檔到伺服器 =====
-let currentAcc = localStorage.getItem('wzw_acc') || '';
-
-async function saveToServer(){
-  if(!currentAcc || !game) return;
-  try{
-    const data = {
-      player: game.player,
-      t: Date.now()
-    };
-    await fetch('/api/save', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({acc: currentAcc, data})
-    });
-  }catch(e){}
-}
-
-async function loadFromServer(acc){
-  try{
-    const r = await fetch('/api/load', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({acc})
-    });
-    const d = await r.json();
-    if(d.ok && d.data && d.data.player && game){
-      Object.assign(game.player, d.data.player);
-      if(typeof updateHUD==='function') updateHUD();
-    }
-  }catch(e){}
-}
-
-setInterval(saveToServer, 20000);
-
-const _enter = window.acctEnter;
-window.acctEnter = function(name){
-  currentAcc = name;
-  localStorage.setItem('wzw_acc', name);
-  if(_enter) _enter(name);
-  setTimeout(()=>loadFromServer(name), 1000);
-};
-
 </script>
+
+<script>
+// 簡單伺服器存檔（不干擾原本登入）
+setInterval(async ()=>{
+  try{
+    const acc = localStorage.getItem('wzw_online_last') || localStorage.getItem('wzw_acc');
+    if(acc && typeof game !== 'undefined' && game && game.player){
+      await fetch('/api/save', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({acc, data:{player:game.player, t:Date.now()}})
+      });
+    }
+  }catch(e){}
+}, 30000);
+</script>
+
 </body>
 </html>
