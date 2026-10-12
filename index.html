@@ -2651,7 +2651,7 @@ const ALL_NPCS=[
     }},
   // —— 大陸傳送師（各大陸主城）——
   {id:'portal_scambray',role:'portal',name:'大陸傳送師 艾琳',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#6a50c0',cont:'scambray',
-    lines:{default:'傳送門通往其他大陸。紅石水晶大陸（中級）需要 Lv.40，冰封亡城大陸（上級）需要 Lv.70。'}},
+    lines:{default:'目前開放：史坎布雷大陸。'}},
   // —— 紅石水晶大陸：赤晶鎮 ——
   {id:'portal_red',role:'portal',name:'大陸傳送師 赤焰',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#c04030',cont:'redrock',
     lines:{default:'岩漿的熱氣連傳送門都烤得發燙。要回史坎布雷，或是前往北方的冰封亡城？'}},
@@ -10982,6 +10982,22 @@ setInterval(()=>{if(game&&!paused)saveGame()},30000);
 
 requestAnimationFrame(loop);
 })();
+
+// ===== 安全移除其他大陸（只改顯示） =====
+(function(){
+  const origOpen = window.openPortal || function(){};
+  // 攔截傳送對話
+  const checkPortal = () => {
+    document.querySelectorAll('div, button, span').forEach(el => {
+      const t = el.textContent || '';
+      if((t.includes('紅石水晶') || t.includes('冰封亡城')) && el.offsetParent !== null){
+        el.style.display = 'none';
+      }
+    });
+  };
+  setInterval(checkPortal, 500);
+})();
+
 </script>
 </body>
 </html>
