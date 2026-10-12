@@ -6935,6 +6935,29 @@ function addSkillProf(skillId, amount){
   p.skillProf[skillId] = (p.skillProf[skillId]||0) + (amount||1);
 }
 
+
+// ===== 職業樹顯示 =====
+function showJobTree(){
+  const tree = `
+【職業樹】
+
+新手
+├─ 劍士
+│  ├─ 戰士 → 劍聖 → 滅世劍帝
+│  ├─ 騎士 → 聖騎士 → 聖裁神皇
+│  └─ 狂戰士 → 血怒者 → 血獄魔君
+├─ 魔導士
+│  ├─ 法師 → 大魔導 → 天罰雷帝
+│  ├─ 牧師 → 主教 → 聖裁神皇
+│  └─ 術士 → 死靈 → 血獄魔君
+└─ 斥候
+   ├─ 忍者 → 影武者 → 無影殺神
+   ├─ 盜賊 → 刺客 → 無影殺神
+   └─ 武鬥家 → 拳聖 → 破天武尊
+`;
+  alert(tree);
+}
+
 function openInv(){
   if(!game||paused)return;
   const p=game.player;
