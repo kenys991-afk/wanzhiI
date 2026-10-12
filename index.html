@@ -2025,17 +2025,11 @@ const MONSTER_LV_MAX=120; // 魔物等級上限（等級依所在大陸＋與主
 const CONTINENTS={
   scambray:{id:'scambray',name:'史坎布雷大陸',tier:'初級',emoji:'🌿',color:'#9ad870',reqLv:1,lvMin:1,lvMax:39,lvStep:0.5,seed:0,town:'史坎布雷',
     sub:'史坎布雷・東境村・王都 亞斯藍',monsters:null},
-  redrock:{id:'redrock',name:'紅石水晶大陸',tier:'中級',emoji:'🔴',color:'#ff7a5a',reqLv:40,lvMin:40,lvMax:69,lvStep:0.4,seed:40961,town:'赤晶鎮',
-    sub:'赤紅岩地與發光晶簇，熔岩裂縫遍布',monsters:[
-    {name:'礦坑哥布林',color:'#7a6a3a',hp:60,atk:12,spd:1.6,exp:30,gold:[8,16],r:15,emoji:'⛏️'},
-    {name:'紅晶蝙蝠',color:'#b02840',hp:48,atk:11,spd:2.4,exp:26,gold:[6,12],r:12,emoji:'🦇',top:18},
+  {name:'紅晶蝙蝠',color:'#b02840',hp:48,atk:11,spd:2.4,exp:26,gold:[6,12],r:12,emoji:'🦇',top:18},
     {name:'熔岩蜥蜴',color:'#5a2a1a',hp:72,atk:14,spd:1.8,exp:34,gold:[9,18],r:17,emoji:'🦎',top:18},
     {name:'晶石魔像',color:'#a83040',hp:100,atk:16,spd:1.0,exp:44,gold:[12,24],r:19,emoji:'🗿',top:34}
   ]},
-  frozen:{id:'frozen',name:'冰封亡城大陸',tier:'上級',emoji:'❄️',color:'#9ad8ff',reqLv:70,lvMin:70,lvMax:120,lvStep:0.45,seed:70607,town:'霜燼要塞',
-    sub:'雪原、冰封廢墟與枯木，亡靈徘徊',monsters:[
-    {name:'亡城骷髏兵',color:'#c8dcec',hp:78,atk:14,spd:1.4,exp:36,gold:[10,20],r:16,emoji:'💀',undead:1},
-    {name:'霜魂巫妖',color:'#6a8ac8',hp:72,atk:18,spd:1.5,exp:46,gold:[12,24],r:16,emoji:'🧟',undead:1,top:30},
+  {name:'霜魂巫妖',color:'#6a8ac8',hp:72,atk:18,spd:1.5,exp:46,gold:[12,24],r:16,emoji:'🧟',undead:1,top:30},
     {name:'冰屍騎士',color:'#4a6a8a',hp:98,atk:17,spd:1.3,exp:44,gold:[12,26],r:17,emoji:'🛡️',undead:1},
     {name:'冰龍幼獸',color:'#7ac8f0',hp:112,atk:18,spd:1.7,exp:50,gold:[14,28],r:19,emoji:'🐉',top:26}
   ]}
@@ -2065,7 +2059,7 @@ function monSz(e){
 function monR(e){ return e.type.r*monSz(e); }          // 命中／攻擊判定半徑（世界 px）
 function monColR(e){ return Math.min(13,monR(e)*0.6); } // 地形碰撞（上限避免大型怪卡在樹間）
 const NEWBIE_LEASH=360; // 新手（Lv.≤10）被追擊時，魔物離巢超過此距離就放棄
-const MONSTER_AI={redrock:{detectR:5*40,detectMs:2500,spd:0.6},frozen:{detectR:5*40,detectMs:900,spd:1}};
+const MONSTER_AI={};
 function monsterAiProfile(){ return MONSTER_AI[curCont]||null; }
 /** 魔物是否在目前畫面內（含 CAM_ZOOM；margin＝螢幕 px 寬限） */
 function monsterOnScreen(e,margin){
@@ -2321,8 +2315,7 @@ const CAVE_DEFS=[
   {cont:'frozen',id:'fz_tomb',name:'亡王地陵',ang:2.36,lv:92,span:2,mul:1.3,pre:'地陵',pool:['亡城骷髏兵','冰屍騎士','霜魂巫妖','冰龍幼獸'],boss:[{name:'亡王・寒骨領主',skin:'冰屍騎士',scale:2.0}]},
   {cont:'frozen',id:'fz_dragon',name:'冰龍巢穴',ang:-2.36,lv:108,span:2,mul:1.4,pre:'龍巢',pool:['冰屍騎士','冰龍幼獸','霜魂巫妖'],boss:[{name:'霜龍・白冥',skin:'冰龍幼獸',scale:2.0}]}];
 const CAVE_THEME={scambray:{fl:['#3a322b','#433a32'],wt:'#3e342c',wt2:'#383029',wl:'#5a4a3c',wr:'#463a2f',cap:'#4e4237',mm:['#4a3f36','#141110']},
-  redrock:{fl:['#3e2622','#47302a'],wt:'#4a2a24',wt2:'#42241f',wl:'#6a3a2e',wr:'#552c23',cap:'#7a2a2a',mm:['#5a3430','#1a0c0a']},
-  frozen:{fl:['#2c3440','#343e4c'],wt:'#3a4656',wt2:'#333e4c',wl:'#56687e',wr:'#45566a',cap:'#8ab0d0',mm:['#3a4a5c','#0e141c']}};
+  };
 const CAVE_MONS=[], CAVE_FLOORS=[], CAVE_PORTALS_ALL=[];
 (function buildCaves(){
   const baseOf=n=>MONSTER_TYPES.find(m=>m.name===n)||Object.values(CONTINENTS).flatMap(c=>c.monsters||[]).find(m=>m.name===n);
@@ -2651,10 +2644,9 @@ const ALL_NPCS=[
     }},
   // —— 大陸傳送師（各大陸主城）——
   {id:'portal_scambray',role:'portal',name:'大陸傳送師 艾琳',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#6a50c0',cont:'scambray',
-    lines:{default:'傳送門通往其他大陸。紅石水晶大陸（中級）需要 Lv.40，冰封亡城大陸（上級）需要 Lv.70。'}},
+    lines:{default:'目前只有史坎布雷大陸。'}},
   // —— 紅石水晶大陸：赤晶鎮 ——
-  {id:'portal_red',role:'portal',name:'大陸傳送師 赤焰',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#c04030',cont:'redrock',
-    lines:{default:'岩漿的熱氣連傳送門都烤得發燙。要回史坎布雷，或是前往北方的冰封亡城？'}},
+  },
   {id:'merchant_red',role:'shop',shop:'general_old',name:'礦鎮商人 老鐵',x:11*TILE,y:9*TILE,emoji:'🧔',color:'#a04020',cont:'redrock',
     lines:{default:'赤晶鎮雜貨鋪！藥水、武器、防具一應俱全——礦坑裡用得上的都有。'}},
   {id:'auctioneer_red',role:'auction',name:'赤晶鎮交易所',x:6.5*TILE,y:11*TILE,emoji:'🏛️',color:'#8b6914',cont:'redrock',
@@ -2662,8 +2654,7 @@ const ALL_NPCS=[
   {id:'chief_red',name:'礦工頭目 葛倫',x:8*TILE,y:6*TILE,emoji:'⛏️',color:'#7a5030',cont:'redrock',
     lines:{default:'紅晶礦脈會發光，熔岩裂縫可別踩進去。晶石魔像越往外越多——量力而為！'}},
   // —— 冰封亡城大陸：霜燼要塞 ——
-  {id:'portal_frost',role:'portal',name:'大陸傳送師 霜語',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#4080c0',cont:'frozen',
-    lines:{default:'寒風會吹散傳送門的光……趁還穩定，要往哪去？'}},
+  },
   {id:'merchant_frost',role:'shop',shop:'general_old',name:'要塞軍需官',x:11*TILE,y:9*TILE,emoji:'🧔',color:'#405a80',cont:'frozen',
     lines:{default:'要塞軍需處。補給有限，但藥水和裝備都還買得到。'}},
   {id:'auctioneer_frost',role:'auction',name:'霜燼要塞交易所',x:6.5*TILE,y:11*TILE,emoji:'🏛️',color:'#8b6914',cont:'frozen',
@@ -7920,13 +7911,9 @@ function draw(){
 
 // ========== 大陸外觀：地磚配色、地物、城鎮建物、氛圍 ==========
 const CONT_TILE_COLORS={
-  redrock:{grass:['#3a1c14','#4a2418'],path:['#5a382c','#6a4032'],stone:['#4a302c','#564038'],tree:['#3a1810','#4a2014'],rock:['#3a2018','#4a281c'],flower:['#401c14','#4e2418'],water:['#c04010','#e06018']},
-  frozen:{grass:['#5a6c7c','#667888'],path:['#6a7888','#748292'],stone:['#4e5c6c','#5a6878'],tree:['#4a5a68','#566878'],rock:['#647484','#708090'],flower:['#5e7080','#6a7c8c'],water:['#4a88aa','#5a98b8']}
-};
+  };
 const CONT_MINIMAP_TILE={
-  redrock:{grass:'#4a2418',path:'#6a4032',stone:'#564038',tree:'#c02840',rock:'#3a1810',flower:'#a04020',water:'#e06018'},
-  frozen:{grass:'#667888',path:'#748292',stone:'#5a6878',tree:'#4a4440',rock:'#708090',flower:'#8ab0c8',water:'#5a98b8'}
-};
+  };
 function tileColorsFor(type){ if(type==='cave'||type==='cwall'){ const th=CAVE_THEME[curCont]; return th?(type==='cave'?th.fl:[th.wt,th.wt2]):TILE_COLORS[type]; } const P=CONT_TILE_COLORS[curCont]; return (P&&P[type])||TILE_COLORS[type]||TILE_COLORS.grass; }
 function minimapTileColor(type){ if(type==='cave'||type==='cwall'){ const th=CAVE_THEME[curCont]; return th?th.mm[type==='cave'?0:1]:MINIMAP_TILE[type]; } const P=CONT_MINIMAP_TILE[curCont]; return (P&&P[type])||MINIMAP_TILE[type]||MINIMAP_TILE.grass; }
 function tileHash(tx,ty){ return hash2(tx,ty,977+(contOf().seed|0))/4294967296; }
