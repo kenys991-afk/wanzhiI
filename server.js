@@ -1,5 +1,5 @@
-const http=require('http'), fs=require('fs'), path=require('path');
-const PORT=process.env.PORT||3000;
+const http=require('http'), fs=require('fs'), path=require('path'), crypto=require('crypto');
+const PORT=process.env.PORT||3000, HOST='0.0.0.0';
 const log=(...a)=>console.log(new Date().toISOString(),...a);
 
 const firebaseConfig={
@@ -20,48 +20,75 @@ async function initFB(){
     const {getFirestore,doc,getDoc,setDoc}=require('firebase/firestore');
     initializeApp(firebaseConfig);
     firestore=getFirestore();
-    log('Firebase connecting...');
     const snap=await getDoc(doc(firestore,'gamedata','main'));
-    if(snap.exists()){
-      const data=snap.data();
-      if(data&&data.db){
-        db=Object.assign(db, data.db);
-        log('Loaded from Firebase, accounts:', Object.keys(db.accounts||{}).length);
-      }
-    } else {
-      log('No data in Firebase yet');
+    if(snap.exists()&&snap.data().db){
+      db=Object.assign(db, snap.data().db);
+      log('Firebase loaded, accounts:', Object.keys(db.accounts||{}).length);
     }
-  }catch(e){ log('Firebase error:', e.message); }
+  }catch(e){log('FB init fail',e.message);}
 }
-
 async function saveFB(){
-  if(!firestore||!dirty) return;
+  if(!firestore) return;
   try{
     const {doc,setDoc}=require('firebase/firestore');
-    await setDoc(doc(firestore,'gamedata','main'),{db, updated:new Date().toISOString()});
+    await setDoc(doc(firestore,'gamedata','main'),{db,t:Date.now()});
     dirty=false;
-    log('Saved to Firebase');
-  }catch(e){ log('Save error:', e.message); }
+  }catch(e){}
 }
-
 initFB();
-setInterval(()=>{ if(dirty) saveFB(); }, 15000);
+setInterval(()=>{if(dirty)saveFB();},10000);
 
-const MIME={'.html':'text/html;charset=utf-8','.js':'text/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.jpg':'image/jpeg'};
+function hash(s){return crypto.createHash('sha256').update(s).digest('hex');}
+function token(){return crypto.randomBytes(16).toString('hex');}
 
-const server=http.createServer((req,res)=>{
-  let urlPath=req.url.split('?')[0];
-  if(urlPath==='/') urlPath='/index.html';
-  const filePath=path.join(__dirname, urlPath);
+const MIME={'.html':'text/html;charset=utf-8','.js':'application/javascript','.json':'application/json','.css':'text/css','.png':'image/png'};
+
+const server=http.createServer(async(req,res)=>{
+  const url=new URL(req.url,'http://x');
+  const p=url.pathname;
   
-  if(fs.existsSync(filePath) && fs.statSync(filePath).isFile()){
-    const ext=path.extname(filePath).toLowerCase();
-    res.writeHead(200, {'Content-Type': MIME[ext]||'application/octet-stream'});
-    fs.createReadStream(filePath).pipe(res);
-  } else {
-    res.writeHead(404, {'Content-Type':'text/plain'});
-    res.end('Not found');
+  // API
+  if(p.startsWith('/api/')){
+    res.setHeader('Content-Type','application/json');
+    let body='';
+    for await(const c of req) body+=c;
+    let data={}; try{data=JSON.parse(body||'{}');}catch(e){}
+    
+    if(p==='/api/register'&&req.method==='POST'){
+      const {acc,pw}=data;
+      if(!acc||!pw) return res.end(JSON.stringify({ok:0,msg:'缺少帳密'}));
+      if(db.accounts[acc]) return res.end(JSON.stringify({ok:0,msg:'帳號已存在'}));
+      db.accounts[acc]={pw:hash(pw),created:Date.now()};
+      dirty=true;
+      return res.end(JSON.stringify({ok:1}));
+    }
+    if(p==='/api/login'&&req.method==='POST'){
+      const {acc,pw}=data;
+      const a=db.accounts[acc];
+      if(!a||a.pw!==hash(pw)) return res.end(JSON.stringify({ok:0,msg:'帳密錯誤'}));
+      const t=token();
+      db.sessions[t]={acc,exp:Date.now()+86400000*7};
+      dirty=true;
+      return res.end(JSON.stringify({ok:1,token:t}));
+    }
+    if(p==='/api/chars'&&req.method==='GET'){
+      const t=url.searchParams.get('token');
+      const s=db.sessions[t];
+      if(!s) return res.end(JSON.stringify({ok:0}));
+      const list=Object.entries(db.chars||{}).filter(([k,v])=>v.account===s.acc).map(([k,v])=>({id:k,...v}));
+      return res.end(JSON.stringify({ok:1,chars:list}));
+    }
+    return res.end(JSON.stringify({ok:0,msg:'unknown'}));
+  }
+  
+  // Static
+  let fp=p==='/'?'/index.html':p;
+  const full=path.join(__dirname,fp);
+  if(fs.existsSync(full)&&fs.statSync(full).isFile()){
+    res.writeHead(200,{'Content-Type':MIME[path.extname(full)]||'text/plain'});
+    fs.createReadStream(full).pipe(res);
+  }else{
+    res.writeHead(404); res.end('Not found');
   }
 });
-
-server.listen(PORT, ()=>log('Server started on port', PORT));
+server.listen(PORT,HOST,()=>log('Server on',PORT));
