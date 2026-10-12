@@ -6958,6 +6958,80 @@ function showJobTree(){
   alert(tree);
 }
 
+
+// ===== 等級與經驗重設 =====
+const LV_CAP = 50;
+const ATTR_CAP = 50;
+function expForLevel(lv){ return lv * 0.001; }
+
+// ===== 只保留史坎布雷 + 洞窟 =====
+const ACTIVE_MAPS = ['scantbury'];
+const CAVE_FLOORS = [
+  {floor:1, type:'small', lv:5, react:1},
+  {floor:2, type:'small', lv:10, react:1},
+  {floor:3, type:'mid', lv:20, react:3},
+  {floor:4, type:'mid', lv:30, react:3},
+  {floor:5, type:'mid', lv:40, react:3},
+  {floor:6, type:'boss', lv:50, react:5},
+  {floor:7, type:'boss', lv:60, react:5}
+];
+
+// 洞窟怪物 20倍
+function caveMonsterStats(base){
+  return {
+    atk: (base.atk||10) * 20,
+    hp: (base.hp||100) * 20,
+    def: (base.def||5) * 20
+  };
+}
+
+// ===== 1～5 轉職業 =====
+const JOB_TIERS = {
+  1: ['swordsman','magician','scout'],
+  2: ['warrior','knight','berserker','mage','priest','warlock','ninja','rogue','fighter'],
+  3: ['sword_saint','bloodrager','stormcaller','bishop','fist_saint','assassin'],
+  4: ['sword_god','blood_god','storm_god','holy_god','fist_god','shadow_god'],
+  5: ['emperor_sword','emperor_blood','emperor_storm','emperor_holy','emperor_fist','emperor_shadow']
+};
+
+const JOB5_NAMES = {
+  emperor_sword:'滅世劍皇', emperor_blood:'血獄魔皇', emperor_storm:'天罰雷皇',
+  emperor_holy:'聖裁神皇', emperor_fist:'破天武皇', emperor_shadow:'無影殺皇'
+};
+
+// ===== 技能：每轉多一招 =====
+function skillsForTier(job, tier){
+  const base = JOB1_SKILLS[job] || JOB2_SKILLS[job] || [];
+  const count = tier; // 1轉1招、2轉2招...
+  return (Array.isArray(base) ? base : []).slice(0, count);
+}
+
+// ===== 職業樹（只顯示自己職業線） =====
+function showMyJobTree(){
+  const p = game.player;
+  const job = p.job || 'novice';
+  let tree = '【我的職業線】\n';
+  tree += '目前：' + (JOBS[job]?.name || job) + '\n';
+  tree += '可轉：';
+  const next = Object.values(JOBS).filter(j => j.parent === job);
+  tree += next.map(j=>j.name).join('、') || '無';
+  alert(tree);
+}
+
+// ===== 技能樹（只顯示自己職業） =====
+function showMySkillTree(){
+  const p = game.player;
+  const job = p.job || 'novice';
+  const tier = p.jobTier || 1;
+  let tree = '【我的技能】\n';
+  const skills = skillsForTier(job, tier);
+  skills.forEach((s,i)=>{
+    const lv = getSkillLevel(p, s.id);
+    tree += (i+1)+'. '+s.name+' Lv.'+lv+'\n';
+  });
+  alert(tree || '尚無技能');
+}
+
 function openInv(){
   if(!game||paused)return;
   const p=game.player;
