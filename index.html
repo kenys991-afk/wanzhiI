@@ -11095,31 +11095,6 @@ setInterval(()=>{if(game&&!paused)saveGame()},30000);
 
 requestAnimationFrame(loop);
 })();
-
-// ===== 經驗值調整 =====
-// 怪物經驗：Lv1=0.001, Lv2=0.002, 依此類推
-function getMonsterExp(lv){
-  return (lv || 1) * 0.001;
-}
-
-// 升級所需經驗（調整後）
-function getExpToLevel(lv){
-  // 等級越高需要越多，但整體降低
-  return Math.floor(100 + lv * 50);
-}
-
-// 經驗條上限
-const EXP_BAR_MAX = 100000;
-
-// 覆寫原本的經驗計算（如果存在）
-if(typeof gainExp === 'function'){
-  const _origGain = gainExp;
-  window.gainExp = function(p, amount){
-    const adjusted = amount * 0.001; // 大幅降低
-    return _origGain(p, adjusted);
-  };
-}
-
 </script>
 </body>
 </html>
