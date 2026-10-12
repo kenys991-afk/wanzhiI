@@ -1211,6 +1211,31 @@ body.ui-s .act-btns {
   display: none !important;
 }
 
+
+/* 欄位對齊：HP/MP、任務、自動練功 */
+body.ui-s #hud-hpmp {
+  left: 8px !important;
+  top: calc(8px + var(--sat)) !important;
+  width: 170px !important;
+  z-index: 40 !important;
+}
+body.ui-s #hud-quest {
+  left: 8px !important;
+  top: calc(70px + var(--sat)) !important;
+  bottom: auto !important;
+  transform: scale(.72) !important;
+  transform-origin: top left !important;
+  z-index: 35 !important;
+}
+body.ui-s #auto-ctl, body.ui-s .auto-ctl {
+  left: 8px !important;
+  top: calc(160px + var(--sat)) !important;
+  right: auto !important;
+  transform: scale(.8) !important;
+  transform-origin: top left !important;
+  z-index: 30 !important;
+}
+
 </style>
 <style id="desc-white">
 /* 解說文字一律白色（標題／名稱／稀有度色、數值高亮維持原色；inline 色不受影響） */
@@ -1235,6 +1260,31 @@ body.ui-s #hud-hpmp {
 }
 body.ui-s .act-btns {
   display: none !important;
+}
+
+
+/* 欄位對齊：HP/MP、任務、自動練功 */
+body.ui-s #hud-hpmp {
+  left: 8px !important;
+  top: calc(8px + var(--sat)) !important;
+  width: 170px !important;
+  z-index: 40 !important;
+}
+body.ui-s #hud-quest {
+  left: 8px !important;
+  top: calc(70px + var(--sat)) !important;
+  bottom: auto !important;
+  transform: scale(.72) !important;
+  transform-origin: top left !important;
+  z-index: 35 !important;
+}
+body.ui-s #auto-ctl, body.ui-s .auto-ctl {
+  left: 8px !important;
+  top: calc(160px + var(--sat)) !important;
+  right: auto !important;
+  transform: scale(.8) !important;
+  transform-origin: top left !important;
+  z-index: 30 !important;
 }
 
 </style>
@@ -6431,10 +6481,21 @@ function checkResonance(p){
 // ===== 洞窟數值調整：攻擊8倍 血8倍 防3倍 =====
 if(typeof HARD_CAVES !== 'undefined'){
   HARD_CAVES.forEach(c => {
-    c.hpMul = 8;
-    c.atkMul = 8;
+    c.hpMul = 16;
+    c.atkMul = 16;
     c.defMul = 3;
   });
+}
+
+// 自我強化怪物
+function monsterSelfBuff(m){
+  if(!m._buffed && Math.random() < 0.25){
+    m.atk = (m.atk||10) * 1.5;
+    m.def = (m.def||5) * 1.3;
+    m._buffed = true;
+    return true;
+  }
+  return false;
 }
 
 // ===== 裝備職業限制與等級 =====
