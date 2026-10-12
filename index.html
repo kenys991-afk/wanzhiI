@@ -1584,7 +1584,7 @@ const JOBS={
     bonus:{hp:50,mp:0,atk:10},grow:{hp:17,mp:2,atk:5},sig:['power_strike','js_rage'],look:{body:'#7a2020',pants:'#2a1a10',weapon:'axe',hat:'horns',cape:null}},
   mage:{tier:2,parent:'magician',name:'法師',icon:'🔮',prof:'mage',color:'#3050c0',trait:'魔力回流：法術暴擊返還 4% 最大 MP，法術擊殺返還 6% 最大 MP。',desc:'元素魔法：火燒、冰緩、雷麻，法術落在游標處。招牌：專注＋元素飛彈',
     bonus:{hp:10,mp:50,atk:9},grow:{hp:8,mp:11,atk:4},sig:['focus','js_missile'],look:{body:'#3050c0',cape:'#303060'}},
-  priest:{tier:2,parent:'magician',name:'牧師',icon:'✝️',prof:'priest',color:'#e0c060',trait:'神聖之力：攻擊皆為聖屬性，對不死系（骷髏兵、冰封亡城的亡靈）×1.75；治療量 +20%；復活守護：受到致命傷時以 30% HP 復活（每 5 分鐘一次）。',desc:'神聖支援：持續治療、淨化、聖光柱，個人傷害低。招牌：急救＋治癒之光',
+  priest:{tier:2,parent:'magician',name:'牧師',icon:'✝️',prof:'priest',color:'#e0c060',trait:'神聖之力：攻擊皆為聖屬性，對不死系（骷髏兵、亡靈）×1.75；治療量 +20%；復活守護：受到致命傷時以 30% HP 復活（每 5 分鐘一次）。',desc:'神聖支援：持續治療、淨化、聖光柱，個人傷害低。招牌：急救＋治癒之光',
     bonus:{hp:30,mp:45,atk:5,def:1},grow:{hp:11,mp:10,atk:3},sig:['first_aid','js_heal'],look:{body:'#f0ead8',pants:'#c0b080',hair:'#e8d090',weapon:'mace',hat:'halo',cape:'#e0c060'}},
   warlock:{tier:2,parent:'magician',name:'術士',icon:'📕',prof:'warlock',color:'#5a2080',trait:'魔力回流：法術暴擊返還 4% 最大 MP，法術擊殺返還 6% 最大 MP。',desc:'禁忌暗咒：詛咒、吸取生命、召喚亡魂與魔物。招牌：專注＋暗影爆',
     bonus:{hp:10,mp:60,atk:11},grow:{hp:7,mp:12,atk:5},sig:['focus','js_shadow'],look:{body:'#4a2060',pants:'#201030',weapon:'tome',hat:'hood',cape:'#200a30',glow:'rgba(150,60,220,0.15)'}},
@@ -1911,14 +1911,12 @@ const ITEMS={
   W('viper_dagger','蛇牙短刃','🔪','dagger','shadow','#60c060',10,{atk:3},185,20,'刃上帶著青綠紋路');
   W('wind_kunai','疾風苦無','🔪','kunai','kunai','#a0e0c0',9,{atk:2},170,20,'輕巧的投擲忍具');
   W('wind_twin','疾風雙刀','⚔️','twinblade','ninja','#a0e0c0',9,{atk:3},190,20,'一對輕巧短刀');
-  // —— 紅石水晶 Lv.40+ ——
-  W('crystal_sword','紅晶劍','⚔️','sword','steel','#ff7a7a',16,{atk:4,hp:20},600,45,'嵌著紅水晶的長劍');
+    W('crystal_sword','紅晶劍','⚔️','sword','steel','#ff7a7a',16,{atk:4,hp:20},600,45,'嵌著紅水晶的長劍');
   W('ember_staff','餘燼法杖','🔥','staff','arcane','#ff9050',17,{atk:5,mp:60},620,45,'杖頭燃著不滅的火');
   W('magma_dagger','熔岩匕首','🗡️','dagger','shadow','#ff6030',16,{atk:5},600,45,'刃身微微發燙');
   W('crimson_twin','赤紅雙刀','⚔️','twinblade','ninja','#ff6060',16,{atk:4},610,45,'赤色雙刃');
   W('crystal_kunai','晶石苦無','🔪','kunai','kunai','#ff9a9a',15,{atk:4},580,45,'水晶打磨的苦無');
-  // —— 冰封亡城 Lv.70+ ——
-  W('frost_greatsword','霜咬巨劍','⚔️','sword','steel','#a0e0ff',26,{atk:7,hp:40},1500,75,'寒氣逼人的巨劍');
+    W('frost_greatsword','霜咬巨劍','⚔️','sword','steel','#a0e0ff',26,{atk:7,hp:40},1500,75,'寒氣逼人的巨劍');
   W('lich_staff','巫妖骨杖','💀','staff','arcane','#b0c8ff',27,{atk:8,mp:100},1550,75,'封著亡者低語的骨杖');
   W('rime_dagger','白霜匕首','🗡️','dagger','shadow','#c0f0ff',26,{atk:8},1500,75,'結霜的暗刃');
   W('glacier_twin','冰河雙刀','⚔️','twinblade','ninja','#c0f0ff',26,{atk:7},1520,75,'冰河打造的雙刀');
@@ -2025,17 +2023,11 @@ const MONSTER_LV_MAX=120; // 魔物等級上限（等級依所在大陸＋與主
 const CONTINENTS={
   scambray:{id:'scambray',name:'史坎布雷大陸',tier:'初級',emoji:'🌿',color:'#9ad870',reqLv:1,lvMin:1,lvMax:39,lvStep:0.5,seed:0,town:'史坎布雷',
     sub:'史坎布雷・東境村・王都 亞斯藍',monsters:null},
-  redrock:{id:'redrock',name:'紅石水晶大陸',tier:'中級',emoji:'🔴',color:'#ff7a5a',reqLv:40,lvMin:40,lvMax:69,lvStep:0.4,seed:40961,town:'赤晶鎮',
-    sub:'赤紅岩地與發光晶簇，熔岩裂縫遍布',monsters:[
-    {name:'礦坑哥布林',color:'#7a6a3a',hp:60,atk:12,spd:1.6,exp:30,gold:[8,16],r:15,emoji:'⛏️'},
-    {name:'紅晶蝙蝠',color:'#b02840',hp:48,atk:11,spd:2.4,exp:26,gold:[6,12],r:12,emoji:'🦇',top:18},
+  
     {name:'熔岩蜥蜴',color:'#5a2a1a',hp:72,atk:14,spd:1.8,exp:34,gold:[9,18],r:17,emoji:'🦎',top:18},
     {name:'晶石魔像',color:'#a83040',hp:100,atk:16,spd:1.0,exp:44,gold:[12,24],r:19,emoji:'🗿',top:34}
   ]},
-  frozen:{id:'frozen',name:'冰封亡城大陸',tier:'上級',emoji:'❄️',color:'#9ad8ff',reqLv:70,lvMin:70,lvMax:120,lvStep:0.45,seed:70607,town:'霜燼要塞',
-    sub:'雪原、冰封廢墟與枯木，亡靈徘徊',monsters:[
-    {name:'亡城骷髏兵',color:'#c8dcec',hp:78,atk:14,spd:1.4,exp:36,gold:[10,20],r:16,emoji:'💀',undead:1},
-    {name:'霜魂巫妖',color:'#6a8ac8',hp:72,atk:18,spd:1.5,exp:46,gold:[12,24],r:16,emoji:'🧟',undead:1,top:30},
+  
     {name:'冰屍騎士',color:'#4a6a8a',hp:98,atk:17,spd:1.3,exp:44,gold:[12,26],r:17,emoji:'🛡️',undead:1},
     {name:'冰龍幼獸',color:'#7ac8f0',hp:112,atk:18,spd:1.7,exp:50,gold:[14,28],r:19,emoji:'🐉',top:26}
   ]}
@@ -2240,10 +2232,8 @@ const ALL_HUBS=[
   {id:'east_village', name:'東境村', kind:'village', tx:36, ty:8, r:4.5, emoji:'🏘️', cont:'scambray'},
   // 王都：北大路（x=8）直通，史坎布雷正北約 38 格
   {id:'capital', name:'王都 亞斯藍', kind:'capital', tx:8, ty:-30, r:9, emoji:'👑', cont:'scambray'},
-  // 紅石水晶大陸（中級）主城：安全區
-  {id:'red_town', name:'赤晶鎮', kind:'city', tx:8, ty:8, r:8, emoji:'⛏️', cont:'redrock', safe:1, safeR:10},
-  // 冰封亡城大陸（上級）主城：安全區＋國家稻草人
-  {id:'frost_town', name:'霜燼要塞', kind:'capital', tx:8, ty:8, r:8, emoji:'❄️', cont:'frozen', safe:1, safeR:10}
+    {id:'red_town', name:'赤晶鎮', kind:'city', tx:8, ty:8, r:8, emoji:'⛏️', cont:'redrock', safe:1, safeR:10},
+    {id:'frost_town', name:'霜燼要塞', kind:'capital', tx:8, ty:8, r:8, emoji:'❄️', cont:'frozen', safe:1, safeR:10}
 ];
 const HUBS=[]; // 目前大陸的據點（applyContinent 篩選）
 function hubAtTile(wx,wy){
@@ -2651,19 +2641,15 @@ const ALL_NPCS=[
     }},
   // —— 大陸傳送師（各大陸主城）——
   {id:'portal_scambray',role:'portal',name:'大陸傳送師 艾琳',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#6a50c0',cont:'scambray',
-    lines:{default:'傳送門通往其他大陸。紅石水晶大陸（中級）需要 Lv.40，冰封亡城大陸（上級）需要 Lv.70。'}},
-  // —— 紅石水晶大陸：赤晶鎮 ——
-  {id:'portal_red',role:'portal',name:'大陸傳送師 赤焰',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#c04030',cont:'redrock',
-    lines:{default:'岩漿的熱氣連傳送門都烤得發燙。要回史坎布雷，或是前往北方的冰封亡城？'}},
+    lines:{default:'傳送門通往其他大陸。目前開放史坎布雷大陸。'}},
+    },
   {id:'merchant_red',role:'shop',shop:'general_old',name:'礦鎮商人 老鐵',x:11*TILE,y:9*TILE,emoji:'🧔',color:'#a04020',cont:'redrock',
     lines:{default:'赤晶鎮雜貨鋪！藥水、武器、防具一應俱全——礦坑裡用得上的都有。'}},
   {id:'auctioneer_red',role:'auction',name:'赤晶鎮交易所',x:6.5*TILE,y:11*TILE,emoji:'🏛️',color:'#8b6914',cont:'redrock',
     lines:{default:'赤晶鎮交易所與各大陸的交易所共用同一份清單。倒下掉落的裝備在這裡也能贖回。'}},
   {id:'chief_red',name:'礦工頭目 葛倫',x:8*TILE,y:6*TILE,emoji:'⛏️',color:'#7a5030',cont:'redrock',
     lines:{default:'紅晶礦脈會發光，熔岩裂縫可別踩進去。晶石魔像越往外越多——量力而為！'}},
-  // —— 冰封亡城大陸：霜燼要塞 ——
-  {id:'portal_frost',role:'portal',name:'大陸傳送師 霜語',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#4080c0',cont:'frozen',
-    lines:{default:'寒風會吹散傳送門的光……趁還穩定，要往哪去？'}},
+    },
   {id:'merchant_frost',role:'shop',shop:'general_old',name:'要塞軍需官',x:11*TILE,y:9*TILE,emoji:'🧔',color:'#405a80',cont:'frozen',
     lines:{default:'要塞軍需處。補給有限，但藥水和裝備都還買得到。'}},
   {id:'auctioneer_frost',role:'auction',name:'霜燼要塞交易所',x:6.5*TILE,y:11*TILE,emoji:'🏛️',color:'#8b6914',cont:'frozen',
@@ -3832,7 +3818,7 @@ function spendExp(p,cost){
 /** 升級所需 EXP（軟化曲線：Lv.40 ≈ 7.6 萬、Lv.70 ≈ 21 萬、Lv.100 ≈ 41.5 萬；單調遞增） */
 function expNeeded(lv){lv=Math.max(1,lv|0);return Math.floor(100*Math.pow(lv,1.8)+50*Math.pow(1.06,lv))}
 /** 魔物等級：依所在大陸＋距離主城（8,8）而定。
- *  史坎布雷（初級）Lv.1–39：約每 2 格 +1；紅石水晶（中級）Lv.40–69：每格 +0.4；冰封亡城（上級）Lv.70–120：每格 +0.45 */
+ *  史坎布雷 Lv.1–50 */
 function monsterBaseLevelAt(tx,ty){
   const C=contOf(), d=Math.max(0,Math.hypot(tx-8,ty-8)-10);
   return Math.min(C.lvMax, C.lvMin+d*(C.lvStep||0.5));
