@@ -11124,6 +11124,54 @@ requestAnimationFrame(loop);
   }
 })();
 
+
+// ===== 怪物強化 =====
+(function(){
+  // 野外怪物：攻防×50、血×20
+  if(typeof spawnMonster === 'function'){
+    const _spawn = spawnMonster;
+    window.spawnMonster = function(m, ...args){
+      const result = _spawn.call(this, m, ...args);
+      if(m && !m.isCave){
+        m.atk = (m.atk||10) * 50;
+        m.def = (m.def||5) * 50;
+        m.hp = m.maxHp = (m.hp||m.maxHp||100) * 20;
+      }
+      return result;
+    };
+  }
+  
+  // 洞窟怪物：攻防×100、血×35
+  if(typeof spawnCaveMonster === 'function'){
+    const _cave = spawnCaveMonster;
+    window.spawnCaveMonster = function(m, ...args){
+      const result = _cave.call(this, m, ...args);
+      if(m){
+        m.atk = (m.atk||10) * 100;
+        m.def = (m.def||5) * 100;
+        m.hp = m.maxHp = (m.hp||m.maxHp||100) * 35;
+        m.isCave = true;
+      }
+      return result;
+    };
+  }
+  
+  // 通用強化（備用）
+  window.buffMonster = function(m, isCave){
+    if(!m) return m;
+    if(isCave){
+      m.atk = (m.atk||10) * 100;
+      m.def = (m.def||5) * 100;
+      m.hp = m.maxHp = (m.maxHp||m.hp||100) * 35;
+    } else {
+      m.atk = (m.atk||10) * 50;
+      m.def = (m.def||5) * 50;
+      m.hp = m.maxHp = (m.maxHp||m.hp||100) * 20;
+    }
+    return m;
+  };
+})();
+
 </script>
 </body>
 </html>
