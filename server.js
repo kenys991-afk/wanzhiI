@@ -629,3 +629,33 @@ wss.on('connection',(ws,req)=>{
   ws.on('error',()=>{});
 });
 server.listen(PORT,HOST,()=>log(`萬王之王 Online 伺服器啟動：http://${HOST}:${PORT}/  (資料 ${DB_FILE})`));
+
+
+// ===== Firebase 備份（不影響原本登入） =====
+const FB_CONFIG = {
+  apiKey: "AIzaSyAxHXvESxlx4dZHeMqREnzhURxQ2cginIU",
+  authDomain: "wanzhi-f1aa8.firebaseapp.com",
+  projectId: "wanzhi-f1aa8",
+  storageBucket: "wanzhi-f1aa8.firebasestorage.app",
+  messagingSenderId: "413457827254",
+  appId: "1:413457827254:web:fd8222de89ba8bbf34ed17"
+};
+let fbDb = null;
+async function initFirebaseBackup(){
+  try{
+    const {initializeApp} = require('firebase/app');
+    const {getFirestore, doc, setDoc, getDoc} = require('firebase/firestore');
+    initializeApp(FB_CONFIG);
+    fbDb = getFirestore();
+    console.log('Firebase backup ready');
+  }catch(e){ console.log('Firebase backup skip:', e.message); }
+}
+async function backupToFirebase(data){
+  if(!fbDb) return;
+  try{
+    const {doc, setDoc} = require('firebase/firestore');
+    await setDoc(doc(fbDb, 'backup', 'gamedata'), {data, t: Date.now()});
+  }catch(e){}
+}
+initFirebaseBackup();
+setInterval(()=>{ if(typeof db !== 'undefined') backupToFirebase(db); }, 30000);
