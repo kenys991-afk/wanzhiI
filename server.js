@@ -662,7 +662,6 @@ setInterval(()=>{ if(typeof db !== 'undefined') backupToFirebase(db); }, 30000);
 
 
 // ===== 帳號 API =====
-const crypto = require('crypto');
 function hashPw(pw){ return crypto.createHash('sha256').update(pw||'').digest('hex'); }
 
 // 在現有 server 處理中加入（需手動整合）
