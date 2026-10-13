@@ -66,6 +66,18 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({ ok: 1, acc: body.acc }));
     }
 
+    
+    if (url.pathname === '/api/changepw') {
+      if (!body.acc || !body.oldPw || !body.newPw) return res.end(JSON.stringify({ ok: 0, msg: '缺少資料' }));
+      const ref = doc(db, 'accounts', body.acc);
+      const snap = await getDoc(ref);
+      if (!snap.exists() || snap.data().pw !== hash(body.oldPw)) {
+        return res.end(JSON.stringify({ ok: 0, msg: '舊密碼錯誤' }));
+      }
+      await setDoc(ref, { pw: hash(body.newPw), created: snap.data().created, updated: Date.now() });
+      return res.end(JSON.stringify({ ok: 1, msg: '密碼已更新' }));
+    }
+
     if (url.pathname === '/api/save') {
       if (!body.acc) return res.end(JSON.stringify({ ok: 0 }));
       await setDoc(doc(db, 'saves', body.acc), { data: body.data || {}, t: Date.now() });

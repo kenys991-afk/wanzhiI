@@ -11216,6 +11216,16 @@ window.fbAuth = {
       body: JSON.stringify({acc, data})
     });
   },
+  
+  async changePw(acc, oldPw, newPw) {
+    const r = await fetch('/api/changepw', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({acc, oldPw, newPw})
+    });
+    return await r.json();
+  },
+
   async load(acc) {
     const r = await fetch('/api/load', {
       method: 'POST',
