@@ -11288,5 +11288,51 @@ setInterval(() => {
 })();
 
 </script>
+<script>
+// ===== 強制攔截註冊/登入 =====
+document.addEventListener('DOMContentLoaded', function(){
+  // 攔截所有可能的提交
+  const forms = document.querySelectorAll('form');
+  forms.forEach(f => {
+    f.addEventListener('submit', async function(e){
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+});
+
+// 覆寫按鈕點擊
+setTimeout(function(){
+  const btns = document.querySelectorAll('button, .btn, [onclick]');
+  btns.forEach(btn => {
+    const text = btn.textContent || '';
+    if(text.includes('登入') || text.includes('註冊')){
+      btn.onclick = async function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        const acc = document.getElementById('acct-name')?.value?.trim() || '';
+        const pw = document.getElementById('acct-pw')?.value || '';
+        if(!acc || !pw){ alert('請輸入帳號密碼'); return false; }
+        
+        const isReg = text.includes('註冊');
+        try{
+          const result = isReg ? await fbAuth.register(acc, pw) : await fbAuth.login(acc, pw);
+          if(result.ok){
+            alert(isReg ? '註冊成功' : '登入成功');
+            localStorage.setItem('fb_acc', acc);
+            if(typeof acctEnter === 'function') acctEnter(acc);
+          } else {
+            alert(result.msg || '失敗');
+          }
+        }catch(err){
+          alert('錯誤: ' + err.message);
+        }
+        return false;
+      };
+    }
+  });
+  console.log('登入按鈕已攔截');
+}, 2000);
+</script>
 </body>
 </html>
