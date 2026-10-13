@@ -11095,6 +11095,33 @@ setInterval(()=>{if(game&&!paused)saveGame()},30000);
 
 requestAnimationFrame(loop);
 })();
+
+// ===== 平衡調整：人物弱化、怪物強化 =====
+(function(){
+  // 人物傷害降低 40%
+  const reduceDmg = (d) => Math.max(1, Math.floor((d||1) * 0.6));
+  
+  // 攔截傷害
+  if(typeof window.calcDamage === 'function'){
+    const orig = window.calcDamage;
+    window.calcDamage = function(...a){ return reduceDmg(orig.apply(this, a)); };
+  }
+  
+  // 怪物強化
+  setInterval(() => {
+    if(typeof game !== 'undefined' && game && game.monsters){
+      game.monsters.forEach(m => {
+        if(m && !m._balanced){
+          m.atk = (m.atk||10) * 3;
+          m.def = (m.def||5) * 2;
+          m.hp = m.maxHp = (m.maxHp||m.hp||100) * 2;
+          m._balanced = true;
+        }
+      });
+    }
+  }, 2000);
+})();
+
 </script>
 </body>
 </html>
