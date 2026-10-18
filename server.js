@@ -631,7 +631,7 @@ wss.on('connection',(ws,req)=>{
 server.listen(PORT,HOST,()=>log(`萬王之王 Online 伺服器啟動：http://${HOST}:${PORT}/  (資料 ${DB_FILE})`));
 
 
-// ===== Firebase 備份（不影響遊戲） =====
+// ===== Firebase 持久化（重啟後自動載入） =====
 const FB_CONFIG = {
   apiKey: "AIzaSyAxHXvESxlx4dZHeMqREnzhURxQ2cginIU",
   authDomain: "wanzhi-f1aa8.firebaseapp.com",
@@ -640,20 +640,39 @@ const FB_CONFIG = {
   messagingSenderId: "413457827254",
   appId: "1:413457827254:web:fd8222de89ba8bbf34ed17"
 };
-let fbBackup = null;
+
 (async () => {
   try {
     const { initializeApp } = require('firebase/app');
-    const { getFirestore, doc, setDoc } = require('firebase/firestore');
+    const { getFirestore, doc, getDoc, setDoc } = require('firebase/firestore');
     initializeApp(FB_CONFIG);
-    fbBackup = getFirestore();
-    console.log('Firebase backup ready');
+    const fb = getFirestore();
+    log('Firebase 已連線，嘗試載入備份...');
+
+    // 啟動時從 Firebase 載入
+    const snap = await getDoc(doc(fb, 'backup', 'latest'));
+    if (snap.exists() && snap.data().data) {
+      const loaded = snap.data().data;
+      // 合併帳號與角色（不覆蓋正在跑的即時資料）
+      if (loaded.accounts) Object.assign(db.accounts, loaded.accounts);
+      if (loaded.chars) Object.assign(db.chars, loaded.chars);
+      if (loaded.sessions) Object.assign(db.sessions, loaded.sessions);
+      if (loaded.mail) Object.assign(db.mail, loaded.mail);
+      log('已從 Firebase 載入帳號：', Object.keys(db.accounts).length, '個');
+      markDirty(); // 寫回本地
+    } else {
+      log('Firebase 尚無備份');
+    }
+
+    // 每 20 秒備份一次
     setInterval(async () => {
-      if (typeof db !== 'undefined' && fbBackup) {
-        try {
-          await setDoc(doc(fbBackup, 'backup', 'latest'), { data: db, t: Date.now() });
-        } catch (e) {}
-      }
-    }, 30000);
-  } catch (e) { console.log('Firebase backup skip'); }
+      try {
+        await setDoc(doc(fb, 'backup', 'latest'), { data: db, t: Date.now() });
+        // log('已備份到 Firebase');
+      } catch (e) { log('Firebase 備份失敗', e.message); }
+    }, 20000);
+
+  } catch (e) {
+    log('Firebase 初始化失敗（繼續使用本地）', e.message);
+  }
 })();
