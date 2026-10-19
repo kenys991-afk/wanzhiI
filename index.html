@@ -1685,7 +1685,7 @@ function doPromote(p,toId){
 /** 六屬性：新手各 5。不隨等級自動增加；在稻草人各自灌經驗，條滿後手動 +1（溢出作廢）。 */
 const ATTR_KEYS=['str','dex','int','vit','wis','luk'];
 const ATTR_NAME={str:'力量',dex:'敏捷',int:'智力',vit:'體力',wis:'精神',luk:'幸運'};
-const ATTR_BASE=5, ATTR_MAX=200;
+const ATTR_BASE=5, ATTR_MAX=75;
 /** 升到下一點所需經驗：6×v²。單屬性 5→20 約 1.5 萬、5→60 約 42 萬、5→100 約 196 萬。 */
 function attrExpNeed(v){
   v=v|0;
@@ -1978,7 +1978,7 @@ const RARITY_NAME=['白・普通','綠・優良','藍・精良','紅・稀有','
 const RARITY_SHORT=['白','綠','藍','紅','紫','金'];
 const TIER_MUL=[1,1.15,1.3,1.5,1.75,2.0];
 /** 掉落品級權重（％）：白／綠／藍／紅／紫（金裝另計：洞窟限定） */
-const TIER_DROP={field:[70,20,7.5,2,0.5],cave:[50,28,14,6,2],rampage:[30,30,22,12,6],boss:[0,0,40,35,25]};
+const TIER_DROP={field:[78,16,4.5,1.2,0.25,0.05],cave:[62,22,10,4.5,1.2,0.3],rampage:[40,28,18,9,4,1],boss:[5,15,30,30,15,5]};
 function rarCls(id){ const it=ITEMS[id]; return it&&it.slot?' rar'+(it.tier|0):''; }
 /** 物品類別（市場篩選）：weapon／armor／helmet／offhand／acc／potion／scroll／misc */
 function itemCat(id){ const it=ITEMS[id]; if(!it) return 'misc'; if(it.slot==='ring'||it.slot==='neck') return 'acc'; if(it.slot) return it.slot; if(/potion|elixir/.test(id)) return 'potion'; if(/scroll/.test(id)) return 'scroll'; return 'misc'; }
@@ -11095,6 +11095,83 @@ setInterval(()=>{if(game&&!paused)saveGame()},30000);
 
 requestAnimationFrame(loop);
 })();
+
+// ===== 平衡與等級上限調整（v1 基準上） =====
+(function(){
+  const LV_CAP = 75;
+  const ATTR_CAP = 75;
+
+  // 等級超過 75 時，把多出來的等級轉回經驗
+  function clampLevel(p){
+    if(!p || !p.level) return;
+    const lv = p.level|0;
+    if(lv > LV_CAP){
+      let refund = 0;
+      for(let i = LV_CAP; i < lv; i++){
+        refund += Math.floor(100*Math.pow(i,1.8)+50*Math.pow(1.06,i));
+      }
+      p.level = LV_CAP;
+      p.exp = (p.exp|0) + refund;
+      p.expNext = Math.floor(100*Math.pow(LV_CAP,1.8)+50*Math.pow(1.06,LV_CAP));
+      console.log('等級已調整至', LV_CAP, '，返還經驗', refund);
+    }
+    // 屬性也限制
+    if(p.attr){
+      for(const k in p.attr){
+        if(p.attr[k] > ATTR_CAP) p.attr[k] = ATTR_CAP;
+      }
+    }
+  }
+
+  // 人物傷害弱化 45%，怪物強化
+  const origCalc = window.calcPlayerDamage || window.playerDamage;
+  // 攔截常見傷害函式
+  ['calcDamage','playerDamage','skillDamage','dealDamage'].forEach(fn=>{
+    if(typeof window[fn]==='function'){
+      const o = window[fn];
+      window[fn] = function(...args){
+        let d = o.apply(this, args);
+        if(typeof d === 'number') d = Math.max(1, Math.floor(d * 0.55));
+        return d;
+      };
+    }
+  });
+
+  // 定期強化怪物
+  setInterval(()=>{
+    if(typeof game==='undefined' || !game) return;
+    const list = game.monsters || game.mobs || [];
+    list.forEach(m=>{
+      if(m && !m._bal){
+        m.atk = Math.floor((m.atk||8) * 2.8);
+        m.def = Math.floor((m.def||4) * 2.2);
+        const hp = m.maxHp || m.hp || 80;
+        m.hp = m.maxHp = Math.floor(hp * 2.2);
+        m._bal = true;
+      }
+    });
+  }, 1500);
+
+  // 角色載入時套用等級限制
+  const origEnter = window.acctEnter;
+  if(typeof origEnter === 'function'){
+    window.acctEnter = function(name){
+      const r = origEnter.apply(this, arguments);
+      setTimeout(()=>{
+        if(typeof game!=='undefined' && game && game.player) clampLevel(game.player);
+      }, 800);
+      return r;
+    };
+  }
+
+  // 也在遊戲開始時檢查
+  setTimeout(()=>{
+    if(typeof game!=='undefined' && game && game.player) clampLevel(game.player);
+  }, 3000);
+
+  console.log('平衡調整已套用：等級上限75、屬性75、人物傷害-45%、怪物強化');
+})();
+
 </script>
 </body>
 </html>
