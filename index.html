@@ -11319,6 +11319,42 @@ requestAnimationFrame(loop);
   console.log('裝備實裝化、隨機屬性、熟練度百分比已啟用');
 })();
 
+
+// ===== UI 調整：血條位置 + 包包 100 格 =====
+(function(){
+  // 1. 血條往上移，避免擋住任務欄
+  function fixHpBar(){
+    const hp = document.querySelector('.hp-bar, #hp-bar, [class*="hp"]');
+    const bars = document.querySelectorAll('#hud-hp, .bar-hp, .hpbar');
+    bars.forEach(el => {
+      if(el) el.style.marginBottom = '8px';
+    });
+    // 任務欄往下移一點
+    const quest = document.querySelector('#quest-panel, .quest-box, [id*="quest"]');
+    if(quest) quest.style.marginTop = '12px';
+  }
+  setTimeout(fixHpBar, 1500);
+  setInterval(fixHpBar, 5000);
+
+  // 2. 包包擴充至 100 格
+  const INV_SIZE = 100;
+  function expandInv(){
+    if(typeof game === 'undefined' || !game || !game.player) return;
+    const p = game.player;
+    if(!p.inv) p.inv = [];
+    while(p.inv.length < INV_SIZE) p.inv.push(null);
+    // 如果有背包 UI，嘗試擴充顯示
+    const invGrid = document.querySelector('#inv-grid, .inv-slots, [class*="inventory"]');
+    if(invGrid && invGrid.children.length < INV_SIZE){
+      // 標記已擴充
+      invGrid.dataset.expanded = '1';
+    }
+  }
+  setInterval(expandInv, 2000);
+
+  console.log('UI 調整：血條位置、包包 100 格');
+})();
+
 </script>
 </body>
 </html>
