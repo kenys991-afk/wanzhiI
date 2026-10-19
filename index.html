@@ -11172,6 +11172,81 @@ requestAnimationFrame(loop);
   console.log('平衡調整已套用：等級上限75、屬性75、人物傷害-45%、怪物強化');
 })();
 
+
+// ===== 進階調整：攻速、吟唱、等級系統 =====
+(function(){
+  const BASE_LV_CAP = 75;
+  const ABS_LV_CAP = 120;
+  const POST75_EXP = 100000000; // 1億經驗
+
+  // 1. 人物攻速變慢（攻擊間隔拉長）
+  const origAtkInterval = window.ATK_INTERVAL || 400;
+  window.ATK_INTERVAL = Math.max(origAtkInterval, 650);
+  
+  // 攔截攻擊函式加冷卻
+  let lastAtk = 0;
+  const origDoAttack = window.doAttack || window.playerAttack;
+  if(typeof origDoAttack === 'function'){
+    window.doAttack = window.playerAttack = function(...args){
+      const now = Date.now();
+      if(now - lastAtk < 650) return;
+      lastAtk = now;
+      return origDoAttack.apply(this, args);
+    };
+  }
+
+  // 2. 法師法術加吟唱時間
+  window.CAST_TIME = {
+    fireball: 1200,
+    icebolt: 1000,
+    lightning: 1500,
+    heal: 800,
+    default: 1000
+  };
+  
+  // 3. 等級系統：75後需熟練度+1億經驗
+  const origGainExp = window.gainExp;
+  if(typeof origGainExp === 'function'){
+    window.gainExp = function(p, amt){
+      if(!p) return;
+      const lv = p.level|0;
+      if(lv >= ABS_LV_CAP) return; // 已滿級
+      
+      if(lv >= BASE_LV_CAP){
+        // 75級後：需要熟練度條件 + 大量經驗
+        p.post75Exp = (p.post75Exp||0) + (amt||0);
+        if(p.post75Exp >= POST75_EXP && (p.proficiency||0) >= (lv - BASE_LV_CAP + 1) * 10){
+          p.level++;
+          p.post75Exp = 0;
+          // 每升一級全屬性+1
+          if(p.attr){
+            for(const k in p.attr){
+              p.attr[k] = Math.min(120, (p.attr[k]|0) + 1);
+            }
+          }
+          if(typeof msg === 'function') msg('🎉 等級提升至 ' + p.level + '！全屬性+1');
+        }
+        return;
+      }
+      return origGainExp(p, amt);
+    };
+  }
+
+  // 4. 稻草人在75級後無法升級
+  const origScarecrow = window.useScarecrow || window.scarecrowExp;
+  if(typeof origScarecrow === 'function'){
+    window.useScarecrow = window.scarecrowExp = function(p, ...args){
+      if(p && (p.level|0) >= BASE_LV_CAP){
+        if(typeof msg === 'function') msg('⚠️ 75級後無法使用稻草人升級');
+        return false;
+      }
+      return origScarecrow.apply(this, [p, ...args]);
+    };
+  }
+
+  console.log('進階調整已套用：攻速減緩、法術吟唱、75-120等級系統');
+})();
+
 </script>
 </body>
 </html>

@@ -13,7 +13,7 @@ const GAME_DIR=(()=>{
   }
   return __dirname;
 })(), DATA_DIR=process.env.WZW_DATA||path.join(__dirname,'data'), DB_FILE=path.join(DATA_DIR,'db.json');
-const TILE=40, EXP_POOL_CAP=1e9, GOLD_CAP=1e9, LV_MAX=75;
+const TILE=40, EXP_POOL_CAP=1e9, GOLD_CAP=1e9, LV_MAX=120;
 const MAX_SPEED=0.65 /*px/ms：最快衝刺＋增益約 0.5*/, MOVE_BUCKET=700 /*瞬步技能緩衝*/;
 const GM_ACCOUNTS=['kokbot'], RESERVED=['kokbot','gm','admin','root','system','gamemaster'];
 const NAME_RE=/^[A-Za-z0-9_\u4e00-\u9fff]{2,16}$/;
