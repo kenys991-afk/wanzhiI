@@ -6507,11 +6507,33 @@ function openInv(){
       er.appendChild(cell);
     }
   }
+
+  // 分頁按鈕
+  let pager=document.getElementById('inv-pager');
+  if(!pager){
+    pager=document.createElement('div');
+    pager.id='inv-pager';
+    pager.style.cssText='display:flex;justify-content:center;gap:8px;margin:6px 0;';
+    const panel=document.querySelector('.inv-panel');
+    const grid=document.getElementById('inv-grid');
+    if(panel&&grid) panel.insertBefore(pager, grid);
+  }
+  pager.innerHTML='';
+  for(let pg=0;pg<3;pg++){
+    const b=document.createElement('button');
+    b.type='button';
+    b.textContent='第'+(pg+1)+'頁';
+    b.style.cssText='padding:4px 14px;background:'+(pg===(window.invPage||0)?'#c9a227':'#3a2a10')+';color:'+(pg===(window.invPage||0)?'#000':'#ffd700')+';border:1px solid #c9a227;border-radius:4px;font-size:12px;cursor:pointer;';
+    b.onclick=()=>{ window.invPage=pg; openInv(); };
+    pager.appendChild(b);
+  }
+
   const grid=document.getElementById('inv-grid');
   grid.innerHTML='';
   const bon=equipBonus(p);
   document.getElementById('inv-info').textContent=`裝備合計 攻+${bon.atk} 防+${bon.def} HP+${bon.hp} MP+${bon.mp} · 外觀≠附加能力`;
-  for(let i=0;i<20;i++){
+  const PAGE=50, page=window.invPage||0, start=page*PAGE;
+  for(let i=start;i<start+PAGE;i++){
     const slot=document.createElement('div');
     slot.className='inv-slot';
     const item=p.inv[i];
