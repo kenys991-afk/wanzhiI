@@ -1824,7 +1824,7 @@ function doPromote(p,toId){
 /** 六屬性：新手各 5。不隨等級自動增加；在稻草人各自灌經驗，條滿後手動 +1（溢出作廢）。 */
 const ATTR_KEYS=['str','dex','int','vit','wis','luk'];
 const ATTR_NAME={str:'力量',dex:'敏捷',int:'智力',vit:'體力',wis:'精神',luk:'幸運'};
-const ATTR_BASE=5, ATTR_MAX=75;
+const ATTR_BASE=5, ATTR_MAX=120;
 /** 升到下一點所需經驗：6×v²。單屬性 5→20 約 1.5 萬、5→60 約 42 萬、5→100 約 196 萬。 */
 function attrExpNeed(v){
   v=v|0;
@@ -11260,7 +11260,7 @@ requestAnimationFrame(loop);
 // ===== 平衡與等級上限調整（v1 基準上） =====
 (function(){
   const LV_CAP = 75;
-  const ATTR_CAP = 75;
+  const ATTR_CAP = 120;
 
   // 等級超過 75 時，把多出來的等級轉回經驗
   function clampLevel(p){
