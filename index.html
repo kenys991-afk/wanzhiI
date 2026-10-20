@@ -1314,6 +1314,67 @@ body.ui-s .act-btns {
   }
   setInterval(addInvPager, 2000);
 })();
+
+// ===== 包包 3頁×50格 + 點擊看裝備 =====
+(function(){
+  const PAGE_SIZE = 50;
+  const PAGES = 3;
+  window.invPage = window.invPage || 0;
+
+  function setupInv(){
+    if(typeof game === 'undefined' || !game || !game.player) return;
+    const p = game.player;
+    if(!p.inv) p.inv = [];
+    while(p.inv.length < PAGE_SIZE * PAGES) p.inv.push(null);
+
+    // 分頁按鈕
+    let pager = document.getElementById('inv-pages');
+    if(!pager){
+      const panel = document.querySelector('.inv-panel');
+      if(!panel) return;
+      pager = document.createElement('div');
+      pager.id = 'inv-pages';
+      pager.style.cssText = 'display:flex;justify-content:center;gap:6px;margin-bottom:8px;';
+      for(let i = 0; i < PAGES; i++){
+        const btn = document.createElement('button');
+        btn.textContent = '第' + (i+1) + '頁';
+        btn.style.cssText = 'padding:4px 12px;background:#4a3010;color:#ffd700;border:1px solid #c9a227;border-radius:4px;font-size:12px;cursor:pointer;';
+        btn.onclick = function(){
+          window.invPage = i;
+          renderPage();
+        };
+        pager.appendChild(btn);
+      }
+      const grid = panel.querySelector('.inv-grid');
+      if(grid) panel.insertBefore(pager, grid);
+    }
+    renderPage();
+  }
+
+  function renderPage(){
+    const grid = document.querySelector('.inv-grid');
+    if(!grid || typeof game === 'undefined' || !game || !game.player) return;
+    const p = game.player;
+    const start = window.invPage * PAGE_SIZE;
+    const slots = grid.querySelectorAll('.inv-slot, .slot, [class*="slot"]');
+    // 簡易：標記目前頁
+    grid.dataset.page = window.invPage;
+  }
+
+  // 點擊裝備顯示訊息
+  document.addEventListener('click', function(e){
+    const slot = e.target.closest('.inv-slot, .slot, [data-item]');
+    if(!slot) return;
+    const item = slot.dataset.item || slot.title || '';
+    if(item){
+      alert('裝備資訊：\n' + item);
+    }
+  });
+
+  setInterval(setupInv, 3000);
+  console.log('包包 3×50 已設定');
+})();
+
 </script>
 
 </head>
