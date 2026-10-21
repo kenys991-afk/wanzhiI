@@ -2040,12 +2040,12 @@ const CONTINENTS={
     {name:'冰龍幼獸',color:'#7ac8f0',hp:112,atk:18,spd:1.7,exp:50,gold:[14,28],r:19,emoji:'🐉',top:26}
   ]},
 
-  purgatory:{id:'purgatory',name:'煉獄大陸',tier:'煉獄',emoji:'🔥',color:'#ff4020',reqLv:100,lvMin:100,lvMax:150,lvStep:0.6,seed:99991,town:'煉獄城',
-    sub:'烈焰與靈魂的煉獄，強敵遍布（一般怪 50 倍強化）',monsters:[
-    {name:'煉獄魔兵',color:'#c02020',hp:10000,atk:2000,spd:2.2,exp:6000,gold:[1500,3000],r:22,emoji:'👹'},
-    {name:'炎魔騎士',color:'#e04020',hp:13000,atk:2400,spd:2.0,exp:7500,gold:[2000,4000],r:24,emoji:'🛡️'},
-    {name:'煉獄巫妖',color:'#802040',hp:9000,atk:2750,spd:1.9,exp:8000,gold:[1750,3500],r:21,emoji:'🧟',top:28},
-    {name:'炎龍守衛',color:'#ff6020',hp:16000,atk:2500,spd:1.8,exp:10000,gold:[2500,5000],r:26,emoji:'🐉',top:30}
+  purgatory:{id:'purgatory',name:'煉獄大陸',tier:'煉獄',emoji:'🔥',color:'#ff4020',reqLv:135,lvMin:135,lvMax:250,lvStep:0.8,seed:99991,town:'煉獄城',
+    sub:'烈焰與靈魂的煉獄，極強敵（反應極快）',monsters:[
+    {name:'煉獄魔兵',color:'#c02020',hp:25000,atk:5000,spd:3.5,exp:15000,gold:[3000,6000],r:24,emoji:'👹'},
+    {name:'炎魔騎士',color:'#e04020',hp:32000,atk:6000,spd:3.2,exp:18000,gold:[4000,8000],r:26,emoji:'🛡️'},
+    {name:'煉獄巫妖',color:'#802040',hp:22000,atk:7000,spd:3.0,exp:20000,gold:[3500,7000],r:23,emoji:'🧟',top:28},
+    {name:'炎龍守衛',color:'#ff6020',hp:40000,atk:6500,spd:2.8,exp:25000,gold:[5000,10000],r:28,emoji:'🐉',top:30}
   ]}
 };
 const CONT_ORDER=['scambray','redrock','frozen','purgatory'];
@@ -2073,7 +2073,7 @@ function monSz(e){
 function monR(e){ return e.type.r*monSz(e); }          // 命中／攻擊判定半徑（世界 px）
 function monColR(e){ return Math.min(13,monR(e)*0.6); } // 地形碰撞（上限避免大型怪卡在樹間）
 const NEWBIE_LEASH=360; // 新手（Lv.≤10）被追擊時，魔物離巢超過此距離就放棄
-const MONSTER_AI={redrock:{detectR:5*40,detectMs:2500,spd:0.6},frozen:{detectR:5*40,detectMs:900,spd:1}};
+const MONSTER_AI={redrock:{detectR:5*40,detectMs:2500,spd:0.6},frozen:{detectR:5*40,detectMs:900,spd:1},purgatory:{detectR:8*40,detectMs:300,spd:1.8}};
 function monsterAiProfile(){ return MONSTER_AI[curCont]||null; }
 /** 魔物是否在目前畫面內（含 CAM_ZOOM；margin＝螢幕 px 寬限） */
 function monsterOnScreen(e,margin){
