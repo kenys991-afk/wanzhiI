@@ -2038,9 +2038,17 @@ const CONTINENTS={
     {name:'霜魂巫妖',color:'#6a8ac8',hp:72,atk:18,spd:1.5,exp:46,gold:[12,24],r:16,emoji:'🧟',undead:1,top:30},
     {name:'冰屍騎士',color:'#4a6a8a',hp:98,atk:17,spd:1.3,exp:44,gold:[12,26],r:17,emoji:'🛡️',undead:1},
     {name:'冰龍幼獸',color:'#7ac8f0',hp:112,atk:18,spd:1.7,exp:50,gold:[14,28],r:19,emoji:'🐉',top:26}
+  ]},
+
+  purgatory:{id:'purgatory',name:'煉獄大陸',tier:'煉獄',emoji:'🔥',color:'#ff4020',reqLv:100,lvMin:100,lvMax:150,lvStep:0.6,seed:99991,town:'煉獄城',
+    sub:'烈焰與靈魂的煉獄，強敵遍布',monsters:[
+    {name:'煉獄魔兵',color:'#c02020',hp:200,atk:40,spd:1.8,exp:120,gold:[30,60],r:18,emoji:'👹'},
+    {name:'炎魔騎士',color:'#e04020',hp:260,atk:48,spd:1.6,exp:150,gold:[40,80],r:20,emoji:'🛡️'},
+    {name:'煉獄巫妖',color:'#802040',hp:180,atk:55,spd:1.5,exp:160,gold:[35,70],r:17,emoji:'🧟',top:28},
+    {name:'炎龍守衛',color:'#ff6020',hp:320,atk:50,spd:1.4,exp:200,gold:[50,100],r:22,emoji:'🐉',top:30}
   ]}
 };
-const CONT_ORDER=['scambray','redrock','frozen'];
+const CONT_ORDER=['scambray','redrock','frozen','purgatory'];
 let curCont='scambray';
 function contOf(id){ return CONTINENTS[id||curCont]||CONTINENTS.scambray; }
 function contLabel(id){ const C=contOf(id); return `${C.name}・${C.tier}`; }
@@ -2243,7 +2251,8 @@ const ALL_HUBS=[
   // 紅石水晶大陸（中級）主城：安全區
   {id:'red_town', name:'赤晶鎮', kind:'city', tx:8, ty:8, r:8, emoji:'⛏️', cont:'redrock', safe:1, safeR:10},
   // 冰封亡城大陸（上級）主城：安全區＋國家稻草人
-  {id:'frost_town', name:'霜燼要塞', kind:'capital', tx:8, ty:8, r:8, emoji:'❄️', cont:'frozen', safe:1, safeR:10}
+  {id:'frost_town', name:'霜燼要塞', kind:'capital', tx:8, ty:8, r:8, emoji:'❄️', cont:'frozen', safe:1, safeR:10},
+  {id:'purg_town', name:'煉獄城', kind:'capital', tx:8, ty:8, r:10, emoji:'🔥', cont:'purgatory', safe:1, safeR:12}
 ];
 const HUBS=[]; // 目前大陸的據點（applyContinent 篩選）
 function hubAtTile(wx,wy){
