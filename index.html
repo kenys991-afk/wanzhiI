@@ -1560,8 +1560,8 @@ const CLASSES={
 function classOf(p){return CLASSES[p&&p.cls]||CLASSES.novice}
 
 // ========== 職業樹 1→3→9→27（新手 → Lv.10 一轉 → Lv.40 二轉 → Lv.70 三轉） ==========
-const JOB_TIER_LV=[1,10,40,70];
-const JOB_TIER_LABEL=['新手','一轉','二轉','三轉'];
+const JOB_TIER_LV=[1,10,40,70,75];
+const JOB_TIER_LABEL=['新手','一轉','二轉','三轉','四轉精通'];
 // look：外觀（沿職業鏈繼承後覆寫）；bonus：轉職當下永久加成（crit/def 為持續被動）；grow：每升一級成長
 const JOBS={
   novice:{tier:0,name:'新手',icon:'🌱',prof:'novice',color:'#a08060',desc:'尚未轉職的冒險者。Lv.10 到天使雕像一轉。',
@@ -1621,7 +1621,26 @@ const JOBS={
   master_thief:{tier:3,parent:'rogue',name:'神偷',icon:'💰',color:'#c09030',desc:'妙手空空：毒刃突進、偷金順藥水',bonus:{hp:50,atk:13,spd:0.4},look:{body:'#6a5030',hat:'bandana',cape:'#c09030',glow:'rgba(255,210,80,0.18)'}},
   fist_saint:{tier:3,parent:'fighter',name:'拳聖',icon:'🥋',color:'#f0a020',desc:'破天拳：連擊點終結重拳與衝擊波',bonus:{hp:80,atk:18,crit:0.05},look:{body:'#f0f0f0',pants:'#202020',hat:'bandana',glow:'rgba(255,200,80,0.2)'}},
   qigong:{tier:3,parent:'fighter',name:'氣功師',icon:'🌀',color:'#40c0c0',desc:'氣功波：連擊點貫穿氣勁並回復',bonus:{hp:60,mp:40,atk:15},look:{body:'#40a0a0',glow:'rgba(100,255,255,0.2)'}},
-  monk:{tier:3,parent:'fighter',name:'武僧',icon:'📿',color:'#d07020',desc:'金剛不壞：連擊點化為護盾、減傷反彈',bonus:{hp:110,mp:20,atk:12,def:3},look:{body:'#d07020',pants:'#7a3010',hat:null,cape:'#a04010',glow:'rgba(255,160,60,0.2)'}}
+
+  // ===== 四轉精通 =====
+  blade_master:{tier:4,parent:'sword_saint',name:'劍神',icon:'⚔️',color:'#fff8e0',desc:'精通：劍氣貫通，前方直線高傷',bonus:{hp:80,atk:22,crit:0.1},look:{body:'#f8f0e0',hat:'crown',cape:'#2040a0',glow:'rgba(255,240,180,0.3)'}},
+  fortress:{tier:4,parent:'guardian',name:'堡壘',icon:'🏰',color:'#a0b0c0',desc:'精通：全場嘲諷＋反傷護盾',bonus:{hp:150,atk:10,def:6},look:{body:'#90a0b0',shield:'iron',glow:'rgba(180,200,220,0.25)'}},
+  war_god:{tier:4,parent:'warlord',name:'戰神',icon:'🔥',color:'#ff4020',desc:'精通：咆哮拉怪＋範圍暈眩',bonus:{hp:100,atk:20,crit:0.06},look:{body:'#e03010',glow:'rgba(255,60,20,0.25)'}},
+  holy_emperor:{tier:4,parent:'paladin',name:'聖皇',icon:'✝️',color:'#ffe080',desc:'精通：聖光柱＋持續治療光環',bonus:{hp:120,mp:40,atk:12,def:3},look:{body:'#ffe090',hat:'crown',glow:'rgba(255,230,120,0.3)'}},
+  dragon_lord:{tier:4,parent:'dragoon',name:'龍王',icon:'🐉',color:'#20a0a0',desc:'精通：龍騰落地震擊全場',bonus:{hp:100,atk:20,spd:0.3},look:{body:'#20a0a0',glow:'rgba(60,220,220,0.25)'}},
+  abyss_knight:{tier:4,parent:'dark_knight',name:'深淵騎士',icon:'🖤',color:'#201020',desc:'精通：暗黑吞噬＋吸血光環',bonus:{hp:110,atk:18,def:2},look:{body:'#201020',hat:'horns',glow:'rgba(140,40,180,0.25)'}},
+  blood_god:{tier:4,parent:'bloodrager',name:'血神',icon:'🩸',color:'#c01010',desc:'精通：HP 越低傷害越高，全傷害吸血',bonus:{hp:90,atk:26},look:{body:'#c01010',glow:'rgba(240,20,20,0.28)'}},
+  apocalypse:{tier:4,parent:'destroyer',name:'末日',icon:'💥',color:'#4a2a10',desc:'精通：大地粉碎直線地裂',bonus:{hp:130,atk:20},look:{body:'#4a2a10',glow:'rgba(220,160,60,0.22)'}},
+  archmage:{tier:4,parent:'pyromancer',name:'大魔導',icon:'🔮',color:'#2040c0',desc:'精通：元素風暴範圍持續傷害',bonus:{hp:50,mp:60,atk:24},look:{body:'#2040c0',hat:'wizard',glow:'rgba(80,120,255,0.28)'}},
+  high_priest:{tier:4,parent:'archbishop',name:'大主教',icon:'✝️',color:'#fff0a0',desc:'精通：群體治療＋復活守護強化',bonus:{hp:70,mp:50,atk:14},look:{body:'#fff0a0',glow:'rgba(255,240,160,0.3)'}},
+  void_warlock:{tier:4,parent:'necromancer',name:'虛空術士',icon:'📕',color:'#401060',desc:'精通：召喚強化＋暗影爆範圍',bonus:{hp:60,mp:55,atk:22},look:{body:'#401060',glow:'rgba(160,60,200,0.25)'}},
+  shadow_master:{tier:4,parent:'shadow_ninja',name:'影之主',icon:'🥷',color:'#1a1a30',desc:'精通：分身數量增加＋瞬身強化',bonus:{hp:55,atk:20,spd:0.4},look:{body:'#1a1a30',glow:'rgba(80,80,160,0.22)'}},
+  phantom:{tier:4,parent:'assassin',name:'幻影',icon:'🗡️',color:'#402060',desc:'精通：潛行時間延長＋背刺強化',bonus:{hp:50,atk:22,crit:0.08},look:{body:'#402060',glow:'rgba(120,60,180,0.22)'}},
+  fist_god:{tier:4,parent:'fist_saint',name:'拳神',icon:'🥋',color:'#f0b030',desc:'精通：連擊點上限提高＋終結技強化',bonus:{hp:90,atk:22,crit:0.06},look:{body:'#f0f0f0',glow:'rgba(255,200,60,0.25)'}},
+  qi_master:{tier:4,parent:'qigong',name:'氣宗',icon:'🌀',color:'#30c0c0',desc:'精通：氣功波貫穿＋回復強化',bonus:{hp:70,mp:50,atk:18},look:{body:'#30c0c0',glow:'rgba(80,255,255,0.25)'}},
+  zen_master:{tier:4,parent:'monk',name:'禪宗大師',icon:'📿',color:'#e08030',desc:'精通：護盾強化＋減傷反彈',bonus:{hp:130,mp:30,atk:14,def:4},look:{body:'#e08030',glow:'rgba(255,160,40,0.25)'}
+,
+    monk:{tier:3,parent:'fighter',name:'武僧',icon:'📿',color:'#d07020',desc:'金剛不壞：連擊點化為護盾、減傷反彈',bonus:{hp:110,mp:20,atk:12,def:3},look:{body:'#d07020',pants:'#7a3010',hat:null,cape:'#a04010',glow:'rgba(255,160,60,0.2)'}}
 };
 // 舊存檔（戰士／法師／舊遠程職／刺客 × 1～3 階）→ 新職業樹最接近的節點
 const LEGACY_JOB_MAP={
