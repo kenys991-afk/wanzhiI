@@ -11095,6 +11095,59 @@ setInterval(()=>{if(game&&!paused)saveGame()},30000);
 
 requestAnimationFrame(loop);
 })();
+
+// ===== 包包優化 =====
+(function(){
+  // 自動堆疊相同物品
+  window.stackInv = function(){
+    if(!game || !game.player) return;
+    const p = game.player;
+    const map = {};
+    const gear = [];
+    (p.inv||[]).forEach(it => {
+      if(!it) return;
+      const def = typeof ITEMS !== 'undefined' ? ITEMS[it.id] : null;
+      if(def && def.slot){ gear.push(it); return; } // 裝備不堆
+      if(!map[it.id]) map[it.id] = {id:it.id, qty:0};
+      map[it.id].qty += (it.qty|0);
+    });
+    p.inv = [...gear, ...Object.values(map)];
+    if(typeof openInv === 'function') openInv();
+    if(typeof msg === 'function') msg('已整理背包');
+  };
+
+  // 依品級排序
+  window.sortInv = function(){
+    if(!game || !game.player) return;
+    const p = game.player;
+    p.inv.sort((a,b) => {
+      if(!a) return 1; if(!b) return -1;
+      const ra = (typeof itemRarity === 'function') ? itemRarity(a.id) : 0;
+      const rb = (typeof itemRarity === 'function') ? itemRarity(b.id) : 0;
+      return rb - ra;
+    });
+    if(typeof openInv === 'function') openInv();
+    if(typeof msg === 'function') msg('已依品級排序');
+  };
+
+  // 加入整理按鈕
+  function addSortBtn(){
+    if(document.getElementById('inv-sort-btn')) return;
+    const panel = document.querySelector('.inv-panel');
+    if(!panel) return;
+    const bar = document.createElement('div');
+    bar.style.cssText = 'display:flex;gap:6px;justify-content:center;margin:6px 0;';
+    bar.innerHTML = '<button type="button" id="inv-sort-btn" class="btn" style="font-size:.75rem;padding:4px 10px;">品級排序</button>' +
+                    '<button type="button" id="inv-stack-btn" class="btn" style="font-size:.75rem;padding:4px 10px;">堆疊整理</button>';
+    const grid = document.getElementById('inv-grid');
+    if(grid) panel.insertBefore(bar, grid);
+    document.getElementById('inv-sort-btn').onclick = sortInv;
+    document.getElementById('inv-stack-btn').onclick = stackInv;
+  }
+  setInterval(addSortBtn, 2000);
+  console.log('包包優化已載入');
+})();
+
 </script>
 </body>
 </html>
