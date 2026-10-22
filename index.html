@@ -2040,7 +2040,7 @@ const CONTINENTS={
     {name:'冰龍幼獸',color:'#7ac8f0',hp:112,atk:18,spd:1.7,exp:50,gold:[14,28],r:19,emoji:'🐉',top:26}
   ]},
 
-  purgatory:{id:'purgatory',name:'煉獄大陸',tier:'煉獄',emoji:'🔥',color:'#ff4020',reqLv:180,lvMin:180,lvMax:350,lvStep:0.8,seed:99991,town:'煉獄城',
+  purgatory:{id:'purgatory',name:'煉獄大陸',tier:'煉獄',emoji:'🔥',color:'#ff4020',reqLv:120,lvMin:120,lvMax:999,lvStep:0.8,seed:99991,town:'煉獄城',
     sub:'烈焰與靈魂的煉獄，極強敵（反應極快）',monsters:[
     {name:'煉獄魔兵',color:'#c02020',hp:300000,atk:55000,def:8000,spd:4.0,exp:15000,gold:[3000,6000],r:24,emoji:'👹'},
     {name:'炎魔騎士',color:'#e04020',hp:400000,atk:65000,def:10000,spd:3.8,exp:18000,gold:[4000,8000],r:26,emoji:'🛡️'},
@@ -11251,21 +11251,32 @@ requestAnimationFrame(loop);
     if(typeof msg === 'function') msg(window.ECO_MODE ? '已開啟省電模式' : '已關閉省電模式');
   }
   // 加入按鈕
-  function addBtn(){
-    if(document.getElementById('eco-btn')) return;
-    const btn = document.createElement('button');
-    btn.id = 'eco-btn';
-    btn.textContent = '🔋 省電';
-    btn.style.cssText = 'position:fixed;top:8px;right:8px;z-index:999;padding:4px 10px;background:#2a2010;color:#ffd700;border:1px solid #c9a227;border-radius:4px;font-size:12px;';
-    btn.onclick = toggleEco;
-    document.body.appendChild(btn);
-  }
-  setTimeout(addBtn, 1500);
+  // 省電模式改放設定內
   // 省電時降低動畫與特效
   const style = document.createElement('style');
   style.textContent = 'body.eco *{animation-duration:.3s!important;transition-duration:.2s!important;} body.eco canvas{image-rendering:pixelated;}';
   document.head.appendChild(style);
   console.log('省電模式已載入（右上角按鈕）');
+})();
+
+
+// ===== 省電模式放入設定 =====
+(function(){
+  function addEcoSetting(){
+    const set = document.getElementById('auto-set') || document.querySelector('.settings, #settings');
+    if(!set || document.getElementById('eco-setting')) return;
+    const row = document.createElement('div');
+    row.id = 'eco-setting';
+    row.style.cssText = 'padding:6px 0;border-top:1px solid #444;margin-top:6px;';
+    row.innerHTML = '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="eco-chk"> 🔋 省電模式</label>';
+    set.appendChild(row);
+    document.getElementById('eco-chk').onchange = function(){
+      window.ECO_MODE = this.checked;
+      document.body.classList.toggle('eco', this.checked);
+      if(typeof msg === 'function') msg(this.checked ? '已開啟省電模式' : '已關閉省電模式');
+    };
+  }
+  setInterval(addEcoSetting, 3000);
 })();
 
 </script>
