@@ -2038,17 +2038,9 @@ const CONTINENTS={
     {name:'霜魂巫妖',color:'#6a8ac8',hp:72,atk:18,spd:1.5,exp:46,gold:[12,24],r:16,emoji:'🧟',undead:1,top:30},
     {name:'冰屍騎士',color:'#4a6a8a',hp:98,atk:17,spd:1.3,exp:44,gold:[12,26],r:17,emoji:'🛡️',undead:1},
     {name:'冰龍幼獸',color:'#7ac8f0',hp:112,atk:18,spd:1.7,exp:50,gold:[14,28],r:19,emoji:'🐉',top:26}
-  ]},
-
-  purgatory:{id:'purgatory',name:'煉獄大陸',tier:'煉獄',emoji:'🔥',color:'#ff4020',reqLv:120,lvMin:120,lvMax:999,lvStep:0.8,seed:99991,town:'煉獄城',
-    sub:'烈焰與靈魂的煉獄，極強敵（反應極快）',monsters:[
-    {name:'煉獄魔兵',color:'#c02020',hp:300000,atk:55000,def:8000,spd:4.0,exp:15000,gold:[3000,6000],r:24,emoji:'👹'},
-    {name:'炎魔騎士',color:'#e04020',hp:400000,atk:65000,def:10000,spd:3.8,exp:18000,gold:[4000,8000],r:26,emoji:'🛡️'},
-    {name:'煉獄巫妖',color:'#802040',hp:280000,atk:75000,def:7000,spd:3.6,caster:1,exp:20000,gold:[3500,7000],r:23,emoji:'🧟',top:28},
-    {name:'炎龍守衛',color:'#ff6020',hp:500000,atk:70000,def:12000,spd:3.4,caster:1,exp:25000,gold:[5000,10000],r:28,emoji:'🐉',top:30}
   ]}
 };
-const CONT_ORDER=['scambray','redrock','frozen','purgatory'];
+const CONT_ORDER=['scambray','redrock','frozen'];
 let curCont='scambray';
 function contOf(id){ return CONTINENTS[id||curCont]||CONTINENTS.scambray; }
 function contLabel(id){ const C=contOf(id); return `${C.name}・${C.tier}`; }
@@ -2073,7 +2065,7 @@ function monSz(e){
 function monR(e){ return e.type.r*monSz(e); }          // 命中／攻擊判定半徑（世界 px）
 function monColR(e){ return Math.min(13,monR(e)*0.6); } // 地形碰撞（上限避免大型怪卡在樹間）
 const NEWBIE_LEASH=360; // 新手（Lv.≤10）被追擊時，魔物離巢超過此距離就放棄
-const MONSTER_AI={redrock:{detectR:5*40,detectMs:2500,spd:0.6},frozen:{detectR:5*40,detectMs:900,spd:1},purgatory:{detectR:8*40,detectMs:300,spd:1.8}};
+const MONSTER_AI={redrock:{detectR:5*40,detectMs:2500,spd:0.6},frozen:{detectR:5*40,detectMs:900,spd:1}};
 function monsterAiProfile(){ return MONSTER_AI[curCont]||null; }
 /** 魔物是否在目前畫面內（含 CAM_ZOOM；margin＝螢幕 px 寬限） */
 function monsterOnScreen(e,margin){
@@ -2251,9 +2243,7 @@ const ALL_HUBS=[
   // 紅石水晶大陸（中級）主城：安全區
   {id:'red_town', name:'赤晶鎮', kind:'city', tx:8, ty:8, r:8, emoji:'⛏️', cont:'redrock', safe:1, safeR:10},
   // 冰封亡城大陸（上級）主城：安全區＋國家稻草人
-  {id:'frost_town', name:'霜燼要塞', kind:'capital', tx:8, ty:8, r:8, emoji:'❄️', cont:'frozen', safe:1, safeR:10},
-  {id:'purg_town', name:'煉獄城', kind:'capital', tx:8, ty:8, r:10, emoji:'🔥', cont:'purgatory', safe:1, safeR:12},
-  {id:'purg_castle', name:'大型煉獄城堡', kind:'capital', tx:20, ty:-15, r:14, emoji:'🏰', cont:'purgatory', safe:1, safeR:16}
+  {id:'frost_town', name:'霜燼要塞', kind:'capital', tx:8, ty:8, r:8, emoji:'❄️', cont:'frozen', safe:1, safeR:10}
 ];
 const HUBS=[]; // 目前大陸的據點（applyContinent 篩選）
 function hubAtTile(wx,wy){
@@ -11106,177 +11096,72 @@ setInterval(()=>{if(game&&!paused)saveGame()},30000);
 requestAnimationFrame(loop);
 })();
 
-// ===== 三轉精通技能 + 熟練度欄位 =====
+// ===== v3：稱號 + 成就 + 世界 Boss =====
 (function(){
-  // 熟練度顯示（裝備欄上方）
-  function showProf(){
-    if(typeof game === 'undefined' || !game || !game.player) return;
-    const p = game.player;
-    const lv = p.level|0;
-    let pct = 0, label = '熟練';
-    if(lv >= 75){
-      pct = Math.min(100, Math.floor(((p.post75Exp||0) / 1e8) * 100));
-      label = '精通熟練';
-    } else {
-      const need = Math.floor(100*Math.pow(Math.max(1,lv),1.8)+50*Math.pow(1.06,lv));
-      pct = Math.min(100, Math.floor(((p.exp||0) / Math.max(1,need)) * 100));
-    }
-    let el = document.getElementById('prof-equip');
-    if(!el){
-      el = document.createElement('div');
-      el.id = 'prof-equip';
-      el.style.cssText = 'text-align:center;font-size:12px;color:#c9a227;margin:4px 0;padding:3px;background:rgba(0,0,0,.3);border-radius:3px;';
-      const eq = document.getElementById('equip-row');
-      if(eq) eq.parentNode.insertBefore(el, eq);
-    }
-    const tier = (typeof jobTierOf === 'function') ? jobTierOf(p) : 0;
-    el.textContent = label + ' ' + pct + '%' + (tier >= 3 && lv >= 75 ? '  ★精通可學' : '');
-  }
-  setInterval(showProf, 1200);
-
-  // 三轉精通技能定義
-  window.MASTERY_SKILLS = {
-    sword_saint: {name:'劍氣貫通', icon:'⚔️', desc:'前方直線高傷'},
-    guardian: {name:'堡壘護盾', icon:'🏰', desc:'減傷並反彈'},
-    warlord: {name:'戰神咆哮', icon:'🔥', desc:'拉怪＋暈眩'},
-    paladin: {name:'聖光柱', icon:'✝️', desc:'範圍聖屬性傷害'},
-    dragoon: {name:'龍騰震擊', icon:'🐉', desc:'落地震擊'},
-    dark_knight: {name:'深淵吞噬', icon:'🖤', desc:'燃血吸血'},
-    bloodrager: {name:'血神狂怒', icon:'🩸', desc:'低血高傷'},
-    destroyer: {name:'末日地裂', icon:'💥', desc:'直線地裂'},
-    pyromancer: {name:'元素風暴', icon:'🔮', desc:'範圍持續傷害'},
-    archbishop: {name:'神聖光環', icon:'✝️', desc:'群體治療'},
-    necromancer: {name:'虛空召喚', icon:'📕', desc:'強化召喚'},
-    shadow_ninja: {name:'影之分身', icon:'🥷', desc:'分身數量+'},
-    assassin: {name:'幻影背刺', icon:'🗡️', desc:'潛行強化'},
-    fist_saint: {name:'拳神終結', icon:'🥋', desc:'連擊強化'},
-    qigong: {name:'氣宗波動', icon:'🌀', desc:'貫穿回復'},
-    monk: {name:'禪宗護體', icon:'📿', desc:'護盾反彈'}
+  // --- 稱號系統 ---
+  window.TITLES = {
+    novice: {name:'初心者', cond:'等級 10'},
+    adventurer: {name:'冒險者', cond:'等級 40'},
+    hero: {name:'英雄', cond:'等級 70'},
+    purgatory: {name:'煉獄行者', cond:'進入煉獄'},
+    slayer: {name:'屠戮者', cond:'擊殺 1000 隻怪'}
   };
-
-  console.log('三轉精通技能與熟練度欄位已載入');
-})();
-
-
-// ===== 技能釋放減慢 =====
-(function(){
-  const MIN_CAST = 2800; // 最少 1.8 秒
-  let lastCast = 0;
-  const origCast = window.castSkill || window.useSkill;
-  if(typeof origCast === 'function'){
-    window.castSkill = window.useSkill = function(...args){
-      const now = Date.now();
-      if(now - lastCast < MIN_CAST){
-        if(typeof msg === 'function') msg('技能冷卻中...');
-        return false;
-      }
-      lastCast = now;
-      return origCast.apply(this, args);
-    };
+  function checkTitles(p){
+    if(!p) return;
+    p.titles = p.titles || [];
+    const lv = p.level|0;
+    if(lv >= 10 && !p.titles.includes('novice')) p.titles.push('novice');
+    if(lv >= 40 && !p.titles.includes('adventurer')) p.titles.push('adventurer');
+    if(lv >= 70 && !p.titles.includes('hero')) p.titles.push('hero');
+    if(p.kills >= 1000 && !p.titles.includes('slayer')) p.titles.push('slayer');
   }
-  // 也攔截常見技能函式
-  ['fireball','icebolt','lightning','heal','power_strike'].forEach(fn => {
-    if(typeof window[fn] === 'function'){
-      const o = window[fn];
-      window[fn] = function(...a){
-        const now = Date.now();
-        if(now - lastCast < MIN_CAST) return false;
-        lastCast = now;
-        return o.apply(this, a);
-      };
+
+  // --- 成就系統 ---
+  window.ACHIEVEMENTS = {
+    first_kill: {name:'初次擊殺', desc:'擊殺第一隻怪物'},
+    lv10: {name:'初出茅廬', desc:'達到 10 級'},
+    enter_purg: {name:'踏入煉獄', desc:'首次進入煉獄大陸'},
+    kill_100: {name:'百戰', desc:'擊殺 100 隻怪物'}
+  };
+  function checkAch(p){
+    if(!p) return;
+    p.ach = p.ach || {};
+    if((p.kills||0) >= 1 && !p.ach.first_kill){ p.ach.first_kill = 1; if(typeof msg==='function') msg('🏆 成就：初次擊殺'); }
+    if((p.level|0) >= 10 && !p.ach.lv10){ p.ach.lv10 = 1; if(typeof msg==='function') msg('🏆 成就：初出茅廬'); }
+    if((p.kills||0) >= 100 && !p.ach.kill_100){ p.ach.kill_100 = 1; if(typeof msg==='function') msg('🏆 成就：百戰'); }
+  }
+
+  // --- 世界 Boss ---
+  window.WORLD_BOSS = {alive:false, hp:500000, maxHp:500000, name:'煉獄霸主', x:0, y:0};
+  function spawnBoss(){
+    if(WORLD_BOSS.alive) return;
+    WORLD_BOSS.alive = true;
+    WORLD_BOSS.hp = WORLD_BOSS.maxHp;
+    if(typeof msg==='function') msg('⚠️ 世界 Boss「煉獄霸主」已出現！');
+  }
+  // 每 30 分鐘嘗試出現一次
+  setInterval(()=>{ if(Math.random()<0.3) spawnBoss(); }, 30*60*1000);
+
+  // 定期檢查稱號與成就
+  setInterval(()=>{
+    if(typeof game!=='undefined' && game && game.player){
+      checkTitles(game.player);
+      checkAch(game.player);
     }
-  });
-  console.log('技能釋放已減慢（最少 1.8 秒）');
-})();
+  }, 5000);
 
-
-// ===== 走路速度減慢 =====
-(function(){
-  const SPEED_MUL = 0.65; // 減慢 35%
-  const origMove = window.movePlayer || window.playerMove;
-  if(typeof origMove === 'function'){
-    window.movePlayer = window.playerMove = function(...args){
-      // 攔截並減慢
-      return origMove.apply(this, args);
-    };
-  }
-  // 直接修改移動常數（如果存在）
-  if(typeof MAX_SPEED !== 'undefined'){
-    // server side, skip
-  }
-  setInterval(() => {
-    if(typeof game !== 'undefined' && game && game.player){
-      const p = game.player;
-      if(p.spd && !p._spdFixed){
-        p.spd = (p.spd || 1) * SPEED_MUL;
-        p._spdFixed = true;
-      }
+  // 顯示稱號（名字旁）
+  setInterval(()=>{
+    const nameEl = document.getElementById('hud-name');
+    if(!nameEl || typeof game==='undefined' || !game || !game.player) return;
+    const p = game.player;
+    const t = p.titles && p.titles.length ? TITLES[p.titles[p.titles.length-1]] : null;
+    if(t && !nameEl.dataset.titleSet){
+      nameEl.title = '稱號：' + t.name;
     }
-  }, 2000);
-  console.log('走路速度已減慢');
-})();
+  }, 3000);
 
-
-// ===== 防止手機休眠 =====
-(function(){
-  let wakeLock = null;
-  async function requestWake(){
-    try{
-      if('wakeLock' in navigator){
-        wakeLock = await navigator.wakeLock.request('screen');
-        console.log('螢幕保持醒著');
-        wakeLock.addEventListener('release', () => console.log('Wake Lock 已釋放'));
-      }
-    }catch(e){ console.log('Wake Lock 不支援或失敗'); }
-  }
-  // 點擊遊戲畫面時請求
-  document.addEventListener('click', requestWake, {once:false});
-  document.addEventListener('touchstart', requestWake, {once:false});
-  // 頁面可見時重新請求
-  document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState === 'visible') requestWake();
-  });
-  console.log('防休眠已載入（點擊畫面後生效）');
-})();
-
-
-// ===== 省電模式 =====
-(function(){
-  window.ECO_MODE = false;
-  function toggleEco(){
-    window.ECO_MODE = !window.ECO_MODE;
-    document.body.classList.toggle('eco', window.ECO_MODE);
-    const btn = document.getElementById('eco-btn');
-    if(btn) btn.textContent = window.ECO_MODE ? '🔋 省電中' : '🔋 省電';
-    if(typeof msg === 'function') msg(window.ECO_MODE ? '已開啟省電模式' : '已關閉省電模式');
-  }
-  // 加入按鈕
-  // 省電模式改放設定內
-  // 省電時降低動畫與特效
-  const style = document.createElement('style');
-  style.textContent = 'body.eco *{animation-duration:.3s!important;transition-duration:.2s!important;} body.eco canvas{image-rendering:pixelated;}';
-  document.head.appendChild(style);
-  console.log('省電模式已載入（右上角按鈕）');
-})();
-
-
-// ===== 省電模式放入設定 =====
-(function(){
-  function addEcoSetting(){
-    const set = document.getElementById('auto-set') || document.querySelector('.settings, #settings');
-    if(!set || document.getElementById('eco-setting')) return;
-    const row = document.createElement('div');
-    row.id = 'eco-setting';
-    row.style.cssText = 'padding:6px 0;border-top:1px solid #444;margin-top:6px;';
-    row.innerHTML = '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="eco-chk"> 🔋 省電模式</label>';
-    set.appendChild(row);
-    document.getElementById('eco-chk').onchange = function(){
-      window.ECO_MODE = this.checked;
-      document.body.classList.toggle('eco', this.checked);
-      if(typeof msg === 'function') msg(this.checked ? '已開啟省電模式' : '已關閉省電模式');
-    };
-  }
-  setInterval(addEcoSetting, 3000);
+  console.log('v3 已載入：稱號、成就、世界 Boss');
 })();
 
 </script>
