@@ -11216,6 +11216,58 @@ requestAnimationFrame(loop);
   console.log('走路速度已減慢');
 })();
 
+
+// ===== 防止手機休眠 =====
+(function(){
+  let wakeLock = null;
+  async function requestWake(){
+    try{
+      if('wakeLock' in navigator){
+        wakeLock = await navigator.wakeLock.request('screen');
+        console.log('螢幕保持醒著');
+        wakeLock.addEventListener('release', () => console.log('Wake Lock 已釋放'));
+      }
+    }catch(e){ console.log('Wake Lock 不支援或失敗'); }
+  }
+  // 點擊遊戲畫面時請求
+  document.addEventListener('click', requestWake, {once:false});
+  document.addEventListener('touchstart', requestWake, {once:false});
+  // 頁面可見時重新請求
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible') requestWake();
+  });
+  console.log('防休眠已載入（點擊畫面後生效）');
+})();
+
+
+// ===== 省電模式 =====
+(function(){
+  window.ECO_MODE = false;
+  function toggleEco(){
+    window.ECO_MODE = !window.ECO_MODE;
+    document.body.classList.toggle('eco', window.ECO_MODE);
+    const btn = document.getElementById('eco-btn');
+    if(btn) btn.textContent = window.ECO_MODE ? '🔋 省電中' : '🔋 省電';
+    if(typeof msg === 'function') msg(window.ECO_MODE ? '已開啟省電模式' : '已關閉省電模式');
+  }
+  // 加入按鈕
+  function addBtn(){
+    if(document.getElementById('eco-btn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'eco-btn';
+    btn.textContent = '🔋 省電';
+    btn.style.cssText = 'position:fixed;top:8px;right:8px;z-index:999;padding:4px 10px;background:#2a2010;color:#ffd700;border:1px solid #c9a227;border-radius:4px;font-size:12px;';
+    btn.onclick = toggleEco;
+    document.body.appendChild(btn);
+  }
+  setTimeout(addBtn, 1500);
+  // 省電時降低動畫與特效
+  const style = document.createElement('style');
+  style.textContent = 'body.eco *{animation-duration:.3s!important;transition-duration:.2s!important;} body.eco canvas{image-rendering:pixelated;}';
+  document.head.appendChild(style);
+  console.log('省電模式已載入（右上角按鈕）');
+})();
+
 </script>
 </body>
 </html>
