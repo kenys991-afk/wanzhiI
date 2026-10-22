@@ -2040,12 +2040,12 @@ const CONTINENTS={
     {name:'冰龍幼獸',color:'#7ac8f0',hp:112,atk:18,spd:1.7,exp:50,gold:[14,28],r:19,emoji:'🐉',top:26}
   ]},
 
-  purgatory:{id:'purgatory',name:'煉獄大陸',tier:'煉獄',emoji:'🔥',color:'#ff4020',reqLv:135,lvMin:135,lvMax:250,lvStep:0.8,seed:99991,town:'煉獄城',
+  purgatory:{id:'purgatory',name:'煉獄大陸',tier:'煉獄',emoji:'🔥',color:'#ff4020',reqLv:120,lvMin:120,lvMax:250,lvStep:0.8,seed:99991,town:'煉獄城',
     sub:'烈焰與靈魂的煉獄，極強敵（反應極快）',monsters:[
-    {name:'煉獄魔兵',color:'#c02020',hp:25000,atk:5000,spd:3.5,exp:15000,gold:[3000,6000],r:24,emoji:'👹'},
-    {name:'炎魔騎士',color:'#e04020',hp:32000,atk:6000,spd:3.2,exp:18000,gold:[4000,8000],r:26,emoji:'🛡️'},
-    {name:'煉獄巫妖',color:'#802040',hp:22000,atk:7000,spd:3.0,exp:20000,gold:[3500,7000],r:23,emoji:'🧟',top:28},
-    {name:'炎龍守衛',color:'#ff6020',hp:40000,atk:6500,spd:2.8,exp:25000,gold:[5000,10000],r:28,emoji:'🐉',top:30}
+    {name:'煉獄魔兵',color:'#c02020',hp:50000,atk:10000,spd:3.8,exp:15000,gold:[3000,6000],r:24,emoji:'👹'},
+    {name:'炎魔騎士',color:'#e04020',hp:65000,atk:12000,spd:3.5,exp:18000,gold:[4000,8000],r:26,emoji:'🛡️'},
+    {name:'煉獄巫妖',color:'#802040',hp:45000,atk:14000,spd:3.3,exp:20000,gold:[3500,7000],r:23,emoji:'🧟',top:28},
+    {name:'炎龍守衛',color:'#ff6020',hp:80000,atk:13000,spd:3.0,exp:25000,gold:[5000,10000],r:28,emoji:'🐉',top:30}
   ]}
 };
 const CONT_ORDER=['scambray','redrock','frozen','purgatory'];
@@ -11154,6 +11154,38 @@ requestAnimationFrame(loop);
   };
 
   console.log('三轉精通技能與熟練度欄位已載入');
+})();
+
+
+// ===== 技能釋放減慢 =====
+(function(){
+  const MIN_CAST = 1800; // 最少 1.8 秒
+  let lastCast = 0;
+  const origCast = window.castSkill || window.useSkill;
+  if(typeof origCast === 'function'){
+    window.castSkill = window.useSkill = function(...args){
+      const now = Date.now();
+      if(now - lastCast < MIN_CAST){
+        if(typeof msg === 'function') msg('技能冷卻中...');
+        return false;
+      }
+      lastCast = now;
+      return origCast.apply(this, args);
+    };
+  }
+  // 也攔截常見技能函式
+  ['fireball','icebolt','lightning','heal','power_strike'].forEach(fn => {
+    if(typeof window[fn] === 'function'){
+      const o = window[fn];
+      window[fn] = function(...a){
+        const now = Date.now();
+        if(now - lastCast < MIN_CAST) return false;
+        lastCast = now;
+        return o.apply(this, a);
+      };
+    }
+  });
+  console.log('技能釋放已減慢（最少 1.8 秒）');
 })();
 
 </script>
