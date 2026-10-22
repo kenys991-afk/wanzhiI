@@ -11279,6 +11279,63 @@ requestAnimationFrame(loop);
   setInterval(addEcoSetting, 3000);
 })();
 
+
+// ===== 劍聖專屬劍氣特效 =====
+(function(){
+  let slashCount = 0;
+  function isSwordSaint(){
+    const p = (typeof game !== 'undefined' && game) ? game.player : null;
+    return p && (typeof jobOf === 'function') && jobOf(p) === 'sword_saint';
+  }
+  function spawnSlash(p){
+    if(!p || !isSwordSaint()) return;
+    for(let i = 0; i < 6; i++){
+      const el = document.createElement('div');
+      el.textContent = '⚔️';
+      el.style.cssText = 'position:fixed;left:'+(p.x||200)+'px;top:'+(p.y||200)+'px;font-size:16px;pointer-events:none;z-index:50;transition:all .4s;';
+      document.body.appendChild(el);
+      setTimeout(() => {
+        el.style.transform = 'translate('+(Math.random()*60-30)+'px,'+(Math.random()*40-60)+'px) rotate('+(Math.random()*90-45)+'deg)';
+        el.style.opacity = '0';
+      }, 20);
+      setTimeout(() => el.remove(), 450);
+    }
+  }
+  const origAtk = window.doAttack || window.playerAttack;
+  if(typeof origAtk === 'function'){
+    window.doAttack = window.playerAttack = function(...args){
+      if(isSwordSaint()){
+        slashCount++;
+        if(slashCount >= 5){ slashCount = 0; spawnSlash(game.player); if(typeof msg==='function') msg('⚔️ 劍氣貫通！'); }
+      }
+      return origAtk.apply(this, args);
+    };
+  }
+  window.swordAura = function(){
+    if(!isSwordSaint()){ if(typeof msg==='function') msg('只有劍聖能使用'); return; }
+    spawnSlash(game.player);
+    const p = game.player;
+    const ring = document.createElement('div');
+    ring.style.cssText = 'position:fixed;left:'+((p.x||200)-50)+'px;top:'+((p.y||200)-50)+'px;width:100px;height:100px;border:2px solid #e0e8ff;border-radius:50%;pointer-events:none;z-index:40;';
+    document.body.appendChild(ring);
+    setTimeout(() => ring.remove(), 400);
+    if(typeof msg==='function') msg('⚔️ 劍氣風暴！');
+  };
+  function addBtn(){
+    if(document.getElementById('sword-aura-btn')) return;
+    if(!isSwordSaint()) return;
+    const btn = document.createElement('button');
+    btn.id = 'sword-aura-btn';
+    btn.textContent = '⚔️ 劍氣';
+    btn.style.cssText = 'position:fixed;bottom:180px;right:20px;z-index:100;padding:6px 12px;background:#2a3040;color:#e0e8ff;border:1px solid #8090c0;border-radius:6px;font-size:13px;';
+    btn.onclick = swordAura;
+    document.body.appendChild(btn);
+  }
+  setInterval(addBtn, 3000);
+  console.log('劍聖專屬劍氣特效已載入');
+})();
+})();
+
 </script>
 </body>
 </html>
