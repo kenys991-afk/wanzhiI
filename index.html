@@ -11189,7 +11189,7 @@ requestAnimationFrame(loop);
 (function(){
   window.PARTY_FOLLOW = true;
   function partyFollow(){
-    if(!window.PARTY_FOLLOW || typeof PT === 'undefined' || !PT.id || !game || !game.player) return;
+    if(!window.PARTY_FOLLOW || !window.FOLLOW_ON || typeof PT === 'undefined' || !PT.id || !game || !game.player) return;
     const p = game.player;
     // 如果我是隊長，不需要跟隨
     if(PT.leader === PT.me) return;
@@ -11208,6 +11208,33 @@ requestAnimationFrame(loop);
   }
   setInterval(partyFollow, 100);
   console.log('組隊跟隨已啟用');
+})();
+
+
+// ===== 跟隨開關 =====
+(function(){
+  window.FOLLOW_ON = true;
+  function addFollowBtn(){
+    if(document.getElementById('follow-btn')) return;
+    const panel = document.getElementById('party-panel');
+    if(!panel) return;
+    const btn = document.createElement('button');
+    btn.id = 'follow-btn';
+    btn.textContent = '跟隨：開';
+    btn.style.cssText = 'margin-top:4px;padding:2px 8px;background:#3a2f20;color:#ffe9a8;border:1px solid #8d7350;border-radius:3px;font-size:11px;cursor:pointer;';
+    btn.onclick = function(){
+      window.FOLLOW_ON = !window.FOLLOW_ON;
+      btn.textContent = window.FOLLOW_ON ? '跟隨：開' : '跟隨：關';
+      btn.style.background = window.FOLLOW_ON ? '#3a2f20' : '#5a3020';
+    };
+    panel.appendChild(btn);
+  }
+  setInterval(addFollowBtn, 2000);
+  // 修改原本的跟隨邏輯，加入開關檢查
+  const origFollow = window.partyFollow;
+  // 覆寫
+  const oldInterval = setInterval;
+  // 直接在跟隨函式裡加檢查
 })();
 
 </script>
