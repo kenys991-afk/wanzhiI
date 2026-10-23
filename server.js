@@ -17,7 +17,7 @@ const TILE=40, EXP_POOL_CAP=1e9, GOLD_CAP=1e9, LV_MAX=120;
 const MAX_SPEED=0.65 /*px/ms：最快衝刺＋增益約 0.5*/, MOVE_BUCKET=700 /*瞬步技能緩衝*/;
 const GM_ACCOUNTS=['kokbot'], RESERVED=['kokbot','gm','admin','root','system','gamemaster'];
 const NAME_RE=/^[A-Za-z0-9_\u4e00-\u9fff]{2,16}$/;
-const CONTS={scambray:{reqLv:1},redrock:{reqLv:40},frozen:{reqLv:70}};
+const CONTS={scambray:{reqLv:1},redrock:{reqLv:40},frozen:{reqLv:70},purgatory:{reqLv:120}};
 const HUBS=[['scambray',8,8],['scambray',36,8],['scambray',8,-30],['redrock',8,8],['frozen',8,8]];
 const log=(...a)=>console.log(new Date().toISOString(),...a);
 
