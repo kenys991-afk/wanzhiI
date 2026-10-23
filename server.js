@@ -628,6 +628,28 @@ wss.on('connection',(ws,req)=>{
   ws.on('close',()=>{ leaveGame(c); clients.delete(c); });
   ws.on('error',()=>{});
 });
+
+// ===== 伺服器端組隊跟隨 =====
+setInterval(()=>{
+  for(const P of parties.values()){
+    const leader = clientOfChar(P.leader);
+    if(!leader || !leader.pos || !leader.char) continue;
+    for(const ch of P.members){
+      if(ch === P.leader) continue;
+      const m = clientOfChar(ch);
+      if(!m || !m.pos || !m.char || m.pos.c !== leader.pos.c) continue;
+      const dx = leader.pos.x - m.pos.x, dy = leader.pos.y - m.pos.y;
+      const dist = Math.hypot(dx, dy);
+      if(dist < 50 || dist > 1000) continue;
+      const spd = 4.5;
+      m.pos.x += (dx / dist) * spd;
+      m.pos.y += (dy / dist) * spd;
+      // 通知該玩家新位置
+      send(m, {t:'pos', x:m.pos.x, y:m.pos.y, c:m.pos.c});
+    }
+  }
+}, 150);
+
 server.listen(PORT,HOST,()=>log(`萬王之王 Online 伺服器啟動：http://${HOST}:${PORT}/  (資料 ${DB_FILE})`));
 
 
