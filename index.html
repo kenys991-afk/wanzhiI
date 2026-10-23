@@ -11184,6 +11184,32 @@ requestAnimationFrame(loop);
   console.log('v3 已載入：稱號、成就、世界 Boss');
 })();
 
+
+// ===== v3.4 組隊跟隨 =====
+(function(){
+  window.PARTY_FOLLOW = true;
+  function partyFollow(){
+    if(!window.PARTY_FOLLOW || typeof PT === 'undefined' || !PT.id || !game || !game.player) return;
+    const p = game.player;
+    // 如果我是隊長，不需要跟隨
+    if(PT.leader === PT.me) return;
+    // 找到隊長位置
+    const leader = PT.members.find(m => m.ch === PT.leader && m.on && m.c === curCont);
+    if(!leader || leader.hp <= 0) return;
+    const dx = leader.x - p.x, dy = leader.y - p.y;
+    const dist = Math.hypot(dx, dy);
+    if(dist < 40) return; // 太近不移動
+    if(dist > 800) return; // 太遠不跟隨（可能不同區域）
+    // 向隊長移動
+    const spd = 2.2;
+    p.x += (dx / dist) * spd;
+    p.y += (dy / dist) * spd;
+    if(typeof netForceMv === 'function') netForceMv();
+  }
+  setInterval(partyFollow, 100);
+  console.log('組隊跟隨已啟用');
+})();
+
 </script>
 </body>
 </html>
