@@ -2679,7 +2679,17 @@ const ALL_NPCS=[
   {id:'auctioneer_frost',role:'auction',name:'霜燼要塞交易所',x:6.5*TILE,y:11*TILE,emoji:'🏛️',color:'#8b6914',cont:'frozen',
     lines:{default:'即使在冰封之地，交易所也與全大陸互通——同一份上架清單。'}},
   {id:'knight_frost',name:'守城聖騎士 薇拉',x:8*TILE,y:6*TILE,emoji:'🛡️',color:'#d0d8e0',cont:'frozen',
-    lines:{default:'亡城的亡靈畏懼聖光——牧師的神聖之力在這裡格外有效。三轉的冒險者可以使用南邊的國家稻草人。'}}
+    lines:{default:'亡城的亡靈畏懼聖光——牧師的神聖之力在這裡格外有效。三轉的冒險者可以使用南邊的國家稻草人。'}},
+
+  // —— 煉獄大陸 ——
+  {id:'portal_purg',role:'portal',name:'煉獄傳送師',x:12.5*TILE,y:10.5*TILE,emoji:'🌀',color:'#c02020',cont:'purgatory',
+    lines:{default:'煉獄的傳送門被烈焰包圍。要離開這裡，或前往其他大陸？'}},
+  {id:'merchant_purg',role:'shop',shop:'general_old',name:'煉獄商人',x:11*TILE,y:9*TILE,emoji:'🧔',color:'#a02020',cont:'purgatory',
+    lines:{default:'煉獄補給站。藥水和裝備都有，但價格不便宜。'}},
+  {id:'auctioneer_purg',role:'auction',name:'煉獄交易所',x:6.5*TILE,y:11*TILE,emoji:'🏛️',color:'#8b6914',cont:'purgatory',
+    lines:{default:'煉獄交易所與全大陸互通。'}},
+  {id:'guard_purg',name:'煉獄守衛',x:8*TILE,y:6*TILE,emoji:'🛡️',color:'#c04020',cont:'purgatory',
+    lines:{default:'大型煉獄城堡在北方。小心外面的怪物，它們非常強。'}}
 ];
 const NPCS=[]; // 目前大陸（applyContinent 篩選）
 /** NPC 閒晃：一般 NPC 在原地半徑 ~1.4 格內慢慢走動；商店／傳送／任務／交易所 NPC 只在崗位上小幅踱步、轉身。玩家靠近（或對話中）就停下來面向玩家 */
