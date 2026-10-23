@@ -46,7 +46,7 @@ function createContext(stmts,contId){
 function loadGameLogic(htmlPath){
   const stmts=extractBody(fs.readFileSync(htmlPath,'utf8'));
   const out={};
-  for(const c of ['scambray','redrock','frozen']) out[c]=createContext(stmts,c);
+  for(const c of ['scambray','redrock','frozen','purgatory']) out[c]=createContext(stmts,c);
   out.stmtCount=stmts.length;
   return out;
 }

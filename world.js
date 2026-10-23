@@ -13,7 +13,7 @@ function createWorld(G,deps){
   const {db,log,pushEntry,send,clients,isGM,aucAddDeath,aucRemoveDrop}=deps; const partyOf=deps.partyOf||(()=>null);
   const TILE=40, CHUNK=16, CH=CHUNK*TILE;
   const W={};
-  for(const cont of ['scambray','redrock','frozen']) W[cont]={cont,ctx:G[cont],mons:new Map(),chunks:new Map(),items:new Map()};
+  for(const cont of ['scambray','redrock','frozen','purgatory']) W[cont]={cont,ctx:G[cont],mons:new Map(),chunks:new Map(),items:new Map()};
   const stats={hits:0,rejected:0,clamped:0,kills:0,mhits:0};
   const playersIn=(cont)=>{ const out=[]; for(const c of clients) if(c.char&&c.pos&&c.pos.c===cont&&db.chars[c.char]) out.push(c); return out; };
   const D=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -181,7 +181,7 @@ function createWorld(G,deps){
 
   // ---------- AI ----------
   // Lv40+ 反應加快（舊值：紅石 200px/2500ms/×0.6、冰封 200px/900ms/×1.0、洞窟同紅石）
-  const AIP={redrock:{detectR:240,detectMs:1600,spd:0.72},frozen:{detectR:240,detectMs:650,spd:1.05},caveLow:{detectR:200,detectMs:2500,spd:0.6},caveHi:{detectR:240,detectMs:1500,spd:0.75}};
+  const AIP={redrock:{detectR:240,detectMs:1600,spd:0.72},frozen:{detectR:240,detectMs:650,spd:1.05},purgatory:{detectR:320,detectMs:400,spd:1.6},caveLow:{detectR:200,detectMs:2500,spd:0.6},caveHi:{detectR:240,detectMs:1500,spd:0.75}};
   function tickCont(w,dt,now){
     const pls=playersIn(w.cont).filter(c=>(c.hp|0)>0||c.hp==null); if(!pls.length) return;
     for(const c of pls){ try{ c.safeZ=w.ctx.inMonsterFreeHub(c.pos.x,c.pos.y); }catch(e){ c.safeZ=false; } }
